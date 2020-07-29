@@ -79,6 +79,7 @@ namespace VTERM{
     }
 
     void VTerm::window_update_geometry(VTab* vtab){
+        DEBUG_PRINT("\nUpdating window geometry..\n");
         /*
          * Ideally, we want a window size that is a multiple of char width and
          * height.. this will give us a terminal window that fits well around the
@@ -94,8 +95,11 @@ namespace VTERM{
         // So, first.. get the char width/height
         gint cell_width = vte_terminal_get_char_width(vte_terminal);
         gint cell_height = vte_terminal_get_char_height(vte_terminal);
+        DEBUG_PRINT("cell_width: %d, cell_height: %d\n", cell_width, cell_height);
+
         gint col_count = vte_terminal_get_column_count(vte_terminal);
         gint row_count = vte_terminal_get_row_count(vte_terminal);
+        DEBUG_PRINT("col_count: %d, row_count: %d\n", col_count, row_count);
 
         gint csd_width = 0;
         gint csd_height = 0;
@@ -107,6 +111,7 @@ namespace VTERM{
 
         csd_width = toplevel.width - contents.width;
         csd_height = toplevel.height - contents.height;
+        DEBUG_PRINT("csd_width: %d, csd_height: %d\n", csd_width, csd_height);
 
         // Now size of chrome
         GtkRequisition hbox_request;
@@ -114,6 +119,7 @@ namespace VTERM{
 
         gint chrome_width = hbox_request.width - (cell_width * col_count);
         gint chrome_height = hbox_request.height - (cell_height * row_count);
+        DEBUG_PRINT("chrome_width: %d, chrome_height: %d\n", chrome_width, chrome_height);
 
         // Now we set the size hints
         if (VConf(window_size_hints)) {
@@ -137,10 +143,11 @@ namespace VTERM{
 
         // Now update our records with the new size information for
         // window_set_size to use them
-        if(gtk_widget_get_realized(vterm->window) && 
-           gtk_widget_get_realized(vtab->vte_terminal)){
+        if(gtk_widget_get_realized(vterm->window)){
             vterm->window_width_cache = csd_width + chrome_width + cell_width * col_count;
             vterm->window_height_cache = csd_height + chrome_height + cell_height * row_count;
+            DEBUG_PRINT("window_width_cache: %d, window_height_cache: %d\n", 
+                        vterm->window_width_cache, vterm->window_height_cache);
         }
     }
 
@@ -152,19 +159,23 @@ namespace VTERM{
 
         // Not doing this to maximized or tiled windows!
         GdkWindow* gdk_window = gtk_widget_get_window (GTK_WIDGET (vterm->window));
-        if (!gtk_widget_get_realized(vterm->window) || 
-            (gdk_window != NULL && (gdk_window_get_state (gdk_window) &
-            (GDK_WINDOW_STATE_MAXIMIZED | GDK_WINDOW_STATE_TILED | GDK_WINDOW_STATE_FULLSCREEN))))
+        if (gdk_window != NULL && (gdk_window_get_state (gdk_window) &
+            (GDK_WINDOW_STATE_MAXIMIZED | GDK_WINDOW_STATE_TILED | GDK_WINDOW_STATE_FULLSCREEN)))
             return;
 
-        // If we have valid info.. use it
-        if(vterm->window_width_cache != -1 && vterm->window_height_cache != -1)
+        // If we have been realized, and csd size were figured out, resize..
+        if(gtk_widget_get_realized(vterm->window)){ 
+
+            DEBUG_PRINT("Resizing window: (%dX%d)\n", 
+                        vterm->window_width_cache, vterm->window_height_cache);
             gtk_window_resize(GTK_WINDOW(vterm->window), 
                               vterm->window_width_cache, vterm->window_height_cache);
+        }
     }
 
     void VTerm::connect_signals(){
         g_signal_connect(window, "key-press-event", G_CALLBACK(window_key_press_cb), this);
+        g_signal_connect(window, "realize", G_CALLBACK(window_set_size), this);
 
         if(VConf(focus_aware_color_background)){
             g_signal_connect(window, "focus-in-event", G_CALLBACK(window_focus_changed_cb), this);
@@ -196,6 +207,8 @@ namespace VTERM{
  * pass execution to vterm.
  */ 
 gint main(gint argc, gchar **argv) {
+    DEBUG_PRINT("This is a debug build!\n");
+
     GError* gerror = nullptr;
     GOptionContext *context = g_option_context_new (nullptr);
     

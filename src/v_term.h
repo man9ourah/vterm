@@ -48,12 +48,12 @@ namespace VTERM{
             /*
              * Updates the window's geometry hints to the WM
              */ 
-            void window_update_geometry(VTab* vtab);
+            static void window_update_geometry(VTab* vtab);
 
             /*
              * Sets the window size to match current tab & geometry hint
              */ 
-            void window_set_size();
+            static void window_set_size();
 
             /*
              * Connect signals of widgets under vterm
