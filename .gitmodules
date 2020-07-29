@@ -1,0 +1,3 @@
+[submodule "subprojects/vte"]
+	path = subprojects/vte
+	url = https://gitlab.gnome.org/GNOME/vte.git
