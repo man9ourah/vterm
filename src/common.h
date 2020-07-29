@@ -18,6 +18,12 @@
     " \\___/    \\_/  \\____/ \\_| \\_|\\_|  |_/\n" \
     "                                     \n"
 
+#ifdef VTERM_DEBUG
+#define DEBUG_PRINT(...) g_printerr(__VA_ARGS__)
+#else
+#define DEBUG_PRINT(..)
+#endif
+
 namespace VTERM{
 
     /*
