@@ -8,13 +8,13 @@
 using namespace std;
 /*
  * Shorter name to get config values
- */ 
+ */
 #define VConf(key) VTERM::VConfig::getVConfig().key
 
 /*
- * Macro constructs to parse a string config, compare 
+ * Macro constructs to parse a string config, compare
  * it to values and assign accordingly.
- */ 
+ */
 #define _PARSE_STRING_START(sec, key) \
                 gchar* temp_##key = g_key_file_get_string(config, #sec, #key, &gerror); \
                 if(!is_gerror(#key)){ \
@@ -62,7 +62,7 @@ using namespace std;
  * Use this macro to get string config from section `sec` and key `key`, then
  * set the config variable to the assignment based on the parsed string value
  * See examples in `configure_vterm()`
- */ 
+ */
 #define PARSE_STRING(sec, key, value, assignment, ...) \
                 _PARSE_STRING_START(sec, key) \
                 _PARSE_STRING_COMPARE(key, value, assignment); \
@@ -71,7 +71,7 @@ using namespace std;
 
 /*
  * Gets a string but free the one before it if it was not nullptr
- */ 
+ */
 #define GET_STRING_AND_FREE(sec, key)   gchar* temp_##key = g_key_file_get_string(config, #sec, #key, &gerror); \
                                         if(!is_gerror(#key)){ \
                                             if(key) \
@@ -81,7 +81,7 @@ using namespace std;
 
 /*
  * Gets a number, tys is the short type name (int), tyf is the long one (integer)
- */ 
+ */
 #define GET_NUMBER(sec, key, tys, tyf)  g##tys temp_##key = g_key_file_get_##tyf(config, #sec, #key, &gerror); \
                                     if(!is_gerror(#key)){ \
                                         key = temp_##key; \
@@ -91,21 +91,21 @@ namespace VTERM{
 
     /*
      * Possible options for new tab cwd
-     */ 
+     */
     enum NewTabCWD{
         // Use cwd of the current tab.
         CURRENT_TAB_CWD,
 
-        // Use cwd passed in cli 
+        // Use cwd passed in cli
         CLI_CWD,
 
-        // Use user's home directory 
+        // Use user's home directory
         HOME_CWD
     };
 
     /*
      * Possible options for new tab cmd
-     */ 
+     */
     enum NewTabCMD{
         // Use default user shell
         DEFAULT_CMD,
@@ -115,8 +115,8 @@ namespace VTERM{
     };
 
     /*
-     * Possible options for tab show 
-     */ 
+     * Possible options for tab show
+     */
     enum ShowTabPolicy{
         // Always show tabs
         ALWAYS,
@@ -138,7 +138,7 @@ namespace VTERM{
      */
     class VConfig{
         public:
-            static VConfig& initVConfig(gchar* cli_config_path = nullptr, 
+            static VConfig& initVConfig(gchar* cli_config_path = nullptr,
                     gchar *cli_cwd = nullptr, gchar **cli_cmd = nullptr){
                 static VConfig vconfig (cli_config_path, cli_cwd, cli_cmd);
                 return vconfig;
@@ -151,7 +151,7 @@ namespace VTERM{
         public:
             /*
              * VTerm Configuration
-             */ 
+             */
             gchar* cli_config_path;
             NewTabCWD tab_cwd = CURRENT_TAB_CWD;
             NewTabCMD tab_cmd = DEFAULT_CMD;
@@ -160,7 +160,7 @@ namespace VTERM{
 
             /*
              * VTE configuration
-             */ 
+             */
             gboolean audible_bell = false,
                      bold_is_bright = true,
                      allow_hyperlink = true,
@@ -175,8 +175,8 @@ namespace VTERM{
                     cell_height_scale = 1,
                     cell_width_scale = 1,
                     color_background_transparency = 0,
-                    focus_out_color_background_transparency = 0; 
-            
+                    focus_out_color_background_transparency = 0;
+
             gchar* word_char_exceptions = nullptr;
 
             gint scrollback_lines = 10000;
@@ -210,7 +210,7 @@ namespace VTERM{
 
             /*
              * Notebook configuration
-             */ 
+             */
             GtkPositionType tabs_position = GTK_POS_TOP;
 
             //TODO: autohide & smart hide
@@ -221,7 +221,7 @@ namespace VTERM{
                      show_scrollbar = true;
 
         private:
-            VConfig(gchar* cli_config_path, gchar *cli_cwd, gchar **cli_cmd) : 
+            VConfig(gchar* cli_config_path, gchar *cli_cwd, gchar **cli_cmd) :
                 cli_config_path(cli_config_path), cli_cwd(cli_cwd), cli_cmd(cli_cmd){
                 load_config_file();
             }
@@ -248,7 +248,7 @@ namespace VTERM{
         public:
             /*
              * Applies the configuration on window
-             */ 
+             */
             void apply_window_config(GtkWindow* window){
                 if(window_title)
                     gtk_window_set_title(window, window_title);
@@ -267,7 +267,7 @@ namespace VTERM{
 
             /*
              * Applies the configuration on notebook
-             */ 
+             */
             void apply_notebook_config(GtkNotebook* notebook){
                 gtk_notebook_set_tab_pos(notebook, tabs_position);
                 gtk_notebook_set_scrollable(notebook, true);
@@ -278,11 +278,11 @@ namespace VTERM{
 
             /*
              * Applies the configuration on vte_terminal
-             */ 
+             */
             void apply_vte_config(VteTerminal* vte_terminal){
                 vte_terminal_set_audible_bell(vte_terminal, audible_bell);
                 vte_terminal_set_allow_hyperlink(vte_terminal, allow_hyperlink);
-                vte_terminal_set_scroll_on_output(vte_terminal, scroll_on_output); 
+                vte_terminal_set_scroll_on_output(vte_terminal, scroll_on_output);
                 vte_terminal_set_scroll_on_keystroke(vte_terminal, scroll_on_keystroke);
                 vte_terminal_set_mouse_autohide(vte_terminal, mouse_autohide);
 
@@ -298,14 +298,14 @@ namespace VTERM{
                 vte_terminal_set_word_char_exceptions(vte_terminal, word_char_exceptions);
                 vte_terminal_set_scrollback_lines(vte_terminal, scrollback_lines);
                 vte_terminal_set_font(vte_terminal, font);
-                vte_terminal_set_color_bold(vte_terminal, &color_bold); 
+                vte_terminal_set_color_bold(vte_terminal, &color_bold);
                 vte_terminal_set_color_foreground(vte_terminal, &color_foreground);
-                vte_terminal_set_color_background(vte_terminal, &color_background); 
+                vte_terminal_set_color_background(vte_terminal, &color_background);
                 vte_terminal_set_color_cursor(vte_terminal, &color_cursor);
-                vte_terminal_set_color_cursor_foreground(vte_terminal, &color_cursor_foreground); 
-                vte_terminal_set_color_highlight(vte_terminal, &color_highlight); 
+                vte_terminal_set_color_cursor_foreground(vte_terminal, &color_cursor_foreground);
+                vte_terminal_set_color_highlight(vte_terminal, &color_highlight);
                 vte_terminal_set_color_highlight_foreground(vte_terminal, &color_highlight_foreground);
-                vte_terminal_set_colors(vte_terminal, &color_foreground, 
+                vte_terminal_set_colors(vte_terminal, &color_foreground,
                         &color_background, palette.data(), palette.size());
                 vte_terminal_set_cursor_shape(vte_terminal, cursor_shape);
                 vte_terminal_set_cursor_blink_mode(vte_terminal, cursor_blink_mode);
@@ -316,9 +316,9 @@ namespace VTERM{
             /*
              * Attmepts to load the configuration file.
              * Adopted from termite
-             */ 
+             */
             void load_config_file(){
-                // First set the defaults 
+                // First set the defaults
                 build_default_style();
 
                 GKeyFile *config = g_key_file_new();
@@ -331,15 +331,15 @@ namespace VTERM{
                                                        cli_config_path,
                                                        G_KEY_FILE_NONE, &gerror);
                     if (!loaded){
-                        if(gerror->code == G_KEY_FILE_ERROR_PARSE || 
+                        if(gerror->code == G_KEY_FILE_ERROR_PARSE ||
                                 gerror->code == G_FILE_ERROR_NOENT)
                             g_printerr("Config file parsing failed (%s): %s\n", cli_config_path,
                                    gerror->message);
                         g_clear_error(&gerror);
                     }
                 }
-                
-                // If not, try in the user config path, usually /home/foo/.config 
+
+                // If not, try in the user config path, usually /home/foo/.config
                 if (!loaded) {
                     gchar* path = g_strconcat(g_get_user_config_dir(), VTERM_DEF_CONFIG, nullptr);
                     loaded = g_key_file_load_from_file(config,
@@ -354,7 +354,7 @@ namespace VTERM{
                     g_free(path);
                 }
 
-                // If not, go nuts! 
+                // If not, go nuts!
                 for (const gchar *const *dir = g_get_system_config_dirs();
                      !loaded && *dir; dir++) {
                     gchar* path = g_strconcat(*dir, VTERM_DEF_CONFIG, nullptr);
@@ -366,10 +366,10 @@ namespace VTERM{
                                    gerror->message);
                         g_clear_error(&gerror);
                     }
-                    g_free(path);       
+                    g_free(path);
                 }
 
-                // Yes! now set the configs, if not, defaults are already inplace 
+                // Yes! now set the configs, if not, defaults are already inplace
                 if (loaded) {
                     configure_vterm(config);
                 }else{
@@ -380,17 +380,17 @@ namespace VTERM{
 
             /*
              * Whether transparency of any kind will be applied
-             */ 
+             */
             gboolean is_transparency(){
-                return(color_background_transparency > 0 || 
-                    (focus_aware_color_background && 
+                return(color_background_transparency > 0 ||
+                    (focus_aware_color_background &&
                         (focus_out_color_background_transparency > 0)));
             }
 
          private:
             /*
              * Fill up this configuration object from the loaded file
-             */ 
+             */
             void configure_vterm(GKeyFile* config){
                 GError *gerror = nullptr;
                 // Helpers for parsing configs
@@ -443,32 +443,32 @@ namespace VTERM{
 
                 GET_NUMBER(behavior, scrollback_lines, int, integer)
 
-                PARSE_STRING(behavior, cursor_blink_mode, 
-                        "on", VTE_CURSOR_BLINK_ON, 
-                        "system", VTE_CURSOR_BLINK_SYSTEM, 
+                PARSE_STRING(behavior, cursor_blink_mode,
+                        "on", VTE_CURSOR_BLINK_ON,
+                        "system", VTE_CURSOR_BLINK_SYSTEM,
                         "off", VTE_CURSOR_BLINK_OFF)
 
                 PARSE_STRING(behavior, backspace_binding,
                         "auto", VTE_ERASE_AUTO,
                         "backspace", VTE_ERASE_ASCII_BACKSPACE,
                         "delete", VTE_ERASE_ASCII_DELETE,
-                        "@7", VTE_ERASE_DELETE_SEQUENCE, 
+                        "@7", VTE_ERASE_DELETE_SEQUENCE,
                         "term-erase", VTE_ERASE_TTY)
 
                 PARSE_STRING(behavior, delete_binding,
                         "auto", VTE_ERASE_AUTO,
                         "backspace", VTE_ERASE_ASCII_BACKSPACE,
                         "delete", VTE_ERASE_ASCII_DELETE,
-                        "@7", VTE_ERASE_DELETE_SEQUENCE, 
+                        "@7", VTE_ERASE_DELETE_SEQUENCE,
                         "term-erase", VTE_ERASE_TTY)
 
                 PARSE_STRING(behavior, tab_cwd,
-                        "current", CURRENT_TAB_CWD, 
-                        "cli", CLI_CWD, 
+                        "current", CURRENT_TAB_CWD,
+                        "cli", CLI_CWD,
                         "home", HOME_CWD)
 
                 PARSE_STRING(behavior, tab_cmd,
-                        "current", DEFAULT_CMD, 
+                        "current", DEFAULT_CMD,
                         "cli", CLI_CMD)
 
                 GET_STRING_AND_FREE(behavior, window_title)
@@ -476,12 +476,12 @@ namespace VTERM{
 
                 get_bool_or_def("behavior", "window_size_hints", &window_size_hints);
 
-                PARSE_STRING(behavior, tabs_position, 
+                PARSE_STRING(behavior, tabs_position,
                         "top", GTK_POS_TOP,
                         "bottom", GTK_POS_BOTTOM)
 
                 PARSE_STRING(behavior, show_tab_policy,
-                        "always", ALWAYS, 
+                        "always", ALWAYS,
                         "smart", SMART,
                         "needed", NEEDED)
 
@@ -495,12 +495,12 @@ namespace VTERM{
                 get_bool_or_def("style", "show_scrollbar", &show_scrollbar);
 
                 GET_NUMBER(style, font_scale, double, double)
-                
+
                 GET_NUMBER(style, cell_height_scale, double, double)
 
                 GET_NUMBER(style, cell_width_scale, double, double)
 
-                GET_NUMBER(style, color_background_transparency, double, double) 
+                GET_NUMBER(style, color_background_transparency, double, double)
 
                 GET_NUMBER(style, focus_out_color_background_transparency, double, double)
 
@@ -517,13 +517,13 @@ namespace VTERM{
                     g_free(temp_font_desc);
                 }
 
-                get_color_or_def("color_bold", &color_bold); 
-                get_color_or_def("color_foreground", &color_foreground); 
-                get_color_or_def("color_background", &color_background); 
-                get_color_or_def("focus_out_color_background", &focus_out_color_background); 
-                get_color_or_def("color_cursor", &color_cursor); 
-                get_color_or_def("color_cursor_foreground", &color_cursor_foreground); 
-                get_color_or_def("color_highlight", &color_highlight); 
+                get_color_or_def("color_bold", &color_bold);
+                get_color_or_def("color_foreground", &color_foreground);
+                get_color_or_def("color_background", &color_background);
+                get_color_or_def("focus_out_color_background", &focus_out_color_background);
+                get_color_or_def("color_cursor", &color_cursor);
+                get_color_or_def("color_cursor_foreground", &color_cursor_foreground);
+                get_color_or_def("color_highlight", &color_highlight);
                 get_color_or_def("color_highlight_foreground", &color_highlight_foreground);
 
                 gchar color_key[] = "color000";
@@ -538,10 +538,10 @@ namespace VTERM{
                         "underline", VTE_CURSOR_SHAPE_UNDERLINE)
 
             }
-           
+
             /*
              * Builds the default style for vterm
-             */ 
+             */
             void build_default_style(){
                 // Colors
                 gdk_rgba_parse(&color_bold, "#f8f8f2");

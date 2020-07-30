@@ -41,7 +41,7 @@ namespace VTERM{
         if(VTab* current_tab = vterm->getCurrentVTab()){
             VteTerminal* current_vte_terminal = VTE_TERMINAL(current_tab->vte_terminal);
             if(fe->in)
-                vte_terminal_set_color_background(current_vte_terminal, &VConf(color_background)); 
+                vte_terminal_set_color_background(current_vte_terminal, &VConf(color_background));
             else
                 vte_terminal_set_color_background(current_vte_terminal, &VConf(focus_out_color_background));
         }
@@ -55,17 +55,17 @@ namespace VTERM{
             gtk_widget_set_visual(GTK_WIDGET(window), visual);
     }
 
-    void VTerm::notebook_switch_page_cb(GtkNotebook* _notebook, GtkWidget* hbox, 
+    void VTerm::notebook_switch_page_cb(GtkNotebook* _notebook, GtkWidget* hbox,
             guint _page_nu, gpointer _data){
         VTab* vtab = vterm->getVTab(hbox);
 
-        // Sync the window title 
+        // Sync the window title
         const gchar* title = gtk_label_get_text(GTK_LABEL(vtab->tab_label));
         vterm->sync_window_title(title);
 
         // Sets the show tab policy for NEEDED
         if(VConf(show_tab_policy) == NEEDED){
-                gtk_notebook_set_show_tabs(vterm->notebook, 
+                gtk_notebook_set_show_tabs(vterm->notebook,
                                            (gtk_notebook_get_n_pages(vterm->notebook) == 1)?
                                             false : true);
         }
@@ -97,7 +97,7 @@ namespace VTERM{
          * not always achievable; if the screen in fullscreen or in tiled WM,
          * and the allocated size is not a multiple of char width/height; we
          * cant really do anything about it.
-         */ 
+         */
         VteTerminal* vte_terminal = VTE_TERMINAL(vtab->vte_terminal);
         GtkWidget* notebook = GTK_WIDGET(vterm->notebook);
 
@@ -122,7 +122,7 @@ namespace VTERM{
         gint csd_height = 0;
 
         if(gtk_widget_get_realized(vterm->window) && VConf(window_size_hints)){
-            // Now size of csd 
+            // Now size of csd
             GtkAllocation toplevel, contents;
             gtk_widget_get_allocation(vterm->window, &toplevel);
             gtk_widget_get_allocation(notebook, &contents);
@@ -151,7 +151,7 @@ namespace VTERM{
 
         vterm->window_width_cache = chrome_width + cell_width * col_count;
         vterm->window_height_cache = chrome_height + cell_height * row_count;
-        DEBUG_PRINT("window_width_cache: %d, window_height_cache: %d\n", 
+        DEBUG_PRINT("window_width_cache: %d, window_height_cache: %d\n",
                     vterm->window_width_cache, vterm->window_height_cache);
     }
 
@@ -172,11 +172,11 @@ namespace VTERM{
             return;
 
         // If we have been realized, and csd size were figured out, resize..
-        if(vterm->window_width_cache > 0 && vterm->window_height_cache > 0){ 
+        if(vterm->window_width_cache > 0 && vterm->window_height_cache > 0){
 
-            DEBUG_PRINT("Resizing window: (%dX%d)\n", 
+            DEBUG_PRINT("Resizing window: (%dX%d)\n",
                         vterm->window_width_cache, vterm->window_height_cache);
-            gtk_window_resize(GTK_WINDOW(vterm->window), 
+            gtk_window_resize(GTK_WINDOW(vterm->window),
                               vterm->window_width_cache, vterm->window_height_cache);
         }
     }
@@ -193,7 +193,7 @@ namespace VTERM{
         g_signal_connect(notebook, "switch-page", G_CALLBACK(notebook_switch_page_cb), nullptr);
 
         if(VConfig::getVConfig().is_transparency())
-            g_signal_connect(window, "screen-changed", 
+            g_signal_connect(window, "screen-changed",
                     G_CALLBACK(window_screen_changed_cb), nullptr);
 
         g_signal_connect(window, "destroy", exit_success, nullptr);
@@ -211,19 +211,19 @@ namespace VTERM{
 }
 
 /*
- * Parse args, initialize configuration, create global vterm, 
+ * Parse args, initialize configuration, create global vterm,
  * pass execution to vterm.
- */ 
+ */
 gint main(gint argc, gchar **argv) {
     DEBUG_PRINT("This is a debug build!\n");
 
     GError* gerror = nullptr;
     GOptionContext *context = g_option_context_new (nullptr);
-    
+
     gboolean version = false;
 
-    gchar *exec = nullptr, *cli_cwd = nullptr, 
-         *cli_config_path = nullptr; 
+    gchar *exec = nullptr, *cli_cwd = nullptr,
+         *cli_config_path = nullptr;
 
     const GOptionEntry main_entries[] = {
         {"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version and exit", "VERSION"},
@@ -260,7 +260,7 @@ gint main(gint argc, gchar **argv) {
             return EXIT_FAILURE;
         }
         cli_cmd = argvp;
-    } 
+    }
 
     // Initialize config
     VTERM::VConfig::initVConfig(cli_config_path, cli_cwd, cli_cmd);

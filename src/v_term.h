@@ -12,24 +12,24 @@ namespace VTERM{
         public:
 
             // Main Gtk window
-            GtkWidget* window; 
+            GtkWidget* window;
 
             // Tab bar, i.e. Gtk notebook
             GtkNotebook* notebook;
-        
+
             // Runtime variables
             gchar** user_def_shell = get_user_shell();
             gchar* user_home = g_strdup(g_get_home_dir());
 
             // Notebook pages to vtab map
-            map<GtkWidget*, VTab*> hboxVTabMap; 
+            map<GtkWidget*, VTab*> hboxVTabMap;
 
             // up-to-date window size info
             gint window_width_cache = -1, window_height_cache = -1;
 
             /*
              * Default constructor & destructor
-             */ 
+             */
             VTerm();
             ~VTerm();
 
@@ -38,7 +38,7 @@ namespace VTERM{
              */
             static gboolean window_focus_changed_cb(GtkWidget* _window, GdkEvent *event, gpointer _data);
             static void window_screen_changed_cb(GtkWidget* window, GdkScreen* _prev_screen, gpointer _data);
-            static void notebook_switch_page_cb(GtkNotebook* _notebook, GtkWidget* hbox, 
+            static void notebook_switch_page_cb(GtkNotebook* _notebook, GtkWidget* hbox,
                     guint _page_nu, gpointer _data);
 
             //TODO:: Configurable keymap and clean way of handling these events
@@ -47,35 +47,35 @@ namespace VTERM{
 
             /*
              * Updates the window's geometry hints to the WM
-             */ 
+             */
             static void window_update_geometry(VTab* vtab);
 
             /*
              * Sets the window size to match current tab & geometry hint
-             */ 
+             */
             static void window_set_size();
 
             /*
              * Connect signals of widgets under vterm
-             */ 
+             */
             void connect_signals();
 
             /*
-             * Create first tab, set the geometry hints and run gtk main 
-             */ 
+             * Create first tab, set the geometry hints and run gtk main
+             */
             void run();
 
             /*
              * Get VTab given parent hbox
-             */ 
+             */
             VTab* getVTab(GtkWidget* hbox){
                 // This throws an exception if not found... good.
-                return hboxVTabMap.at(hbox);               
+                return hboxVTabMap.at(hbox);
             }
 
             /*
              * Get VTab at page pn
-             */ 
+             */
             VTab* getVTab(gint pn){
                 GtkWidget* hbox = gtk_notebook_get_nth_page(notebook, pn);
                 if(hbox)
@@ -85,14 +85,14 @@ namespace VTERM{
 
             /*
              * Gets current VTab
-             */ 
+             */
             VTab* getCurrentVTab(){
                 return getVTab(gtk_notebook_get_current_page(notebook));
             }
 
             /*
              * Inserts new tab to notebook
-             */ 
+             */
             void insertVTab(VTab* vtab){
                 GtkWidget* hbox = vtab->hbox;
 
@@ -120,7 +120,7 @@ namespace VTERM{
 
                 // tab bar should fill the space
                 gtk_container_child_set(GTK_CONTAINER(notebook), hbox,
-                        "tab-fill", true, 
+                        "tab-fill", true,
                         "tab-expand", true, nullptr);
 
                 // Give focus to terminal
@@ -132,7 +132,7 @@ namespace VTERM{
 
             /*
              * Deletes vtab
-             */ 
+             */
             void deleteVTab(VTab* vtab){
                 GtkWidget* hbox = vtab->hbox;
 
@@ -150,8 +150,8 @@ namespace VTERM{
             }
 
             /*
-             * Sync the window title 
-             */ 
+             * Sync the window title
+             */
             void sync_window_title(const gchar* title){
                 if(!VConf(window_title))
                     gtk_window_set_title(GTK_WINDOW(window), title);

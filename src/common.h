@@ -5,7 +5,7 @@
 
 /*
  * VTerm information
- */ 
+ */
 #define VTERM_VERSION "0.1"
 #define VTERM_CREDITS "Author: Mansour Alharthi <man9our.ah@gmail.com>."
 #define VTERM_DEF_CONFIG "/vterm/vterm.conf"

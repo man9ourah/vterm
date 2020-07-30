@@ -12,7 +12,7 @@ namespace VTERM{
 
     void VTab::terminal_create_cb(VteTerminal* _vte_terminal, GPid pid, GError *error, gpointer data){
         if(pid < 0){
-            // Opps! 
+            // Opps!
             // Report the error..
             g_printerr("Could not create a new tab: %s\n", error->message);
 
@@ -58,7 +58,7 @@ namespace VTERM{
 #endif
 
         if(is_first_tab){
-            // first tab always use cli or defaults 
+            // first tab always use cli or defaults
             if(!cmd)
                 cmd = vterm->user_def_shell;
             if(!cwd)
@@ -66,15 +66,15 @@ namespace VTERM{
 
         }else{
             // For other tabs, consult config
-            
+
             if(VConf(tab_cmd) == DEFAULT_CMD)
-                // use default shell, note that it is initialized to cli_cmd 
+                // use default shell, note that it is initialized to cli_cmd
                 // so CLI_CMD is covered.
                 cmd = vterm->user_def_shell;
 
             if(VConf(tab_cwd) == CURRENT_TAB_CWD){
                 // We need to get the current tab cwd
-                // Utilize vte OSC 7 
+                // Utilize vte OSC 7
                 VTab* current_vtab = vterm->getCurrentVTab();
                 VteTerminal* vte_terminal = VTE_TERMINAL(current_vtab->vte_terminal);
                 const gchar* cwd_uri = vte_terminal_get_current_directory_uri(vte_terminal);
@@ -105,7 +105,7 @@ namespace VTERM{
     }
 
     VTab::VTab(gchar* cwd, gchar** cmd, gchar** env){
-        // Create terminal 
+        // Create terminal
         vte_terminal = vte_terminal_new();
         tab_label = create_tab_label();
 
@@ -115,7 +115,7 @@ namespace VTERM{
 
         // Scrollbar
         if(VConf(show_scrollbar)){
-            scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, 
+            scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL,
                     gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(vte_terminal)));
             gtk_box_pack_start(GTK_BOX(hbox), scrollbar, false, false, 0);
         }
@@ -131,9 +131,9 @@ namespace VTERM{
 
         // Finally, spawn the child
         GSpawnFlags spawn_flags = G_SPAWN_SEARCH_PATH_FROM_ENVP;
-        vte_terminal_spawn_async(VTE_TERMINAL(vte_terminal), VTE_PTY_DEFAULT, cwd, cmd, env, 
+        vte_terminal_spawn_async(VTE_TERMINAL(vte_terminal), VTE_PTY_DEFAULT, cwd, cmd, env,
                 spawn_flags, NULL, NULL, NULL, -1, NULL, terminal_create_cb, this);
-        
+
     }
 
 }
