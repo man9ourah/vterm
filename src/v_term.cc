@@ -57,12 +57,21 @@ namespace VTERM{
             guint _page_nu, gpointer _data){
         VTab* vtab = vterm->getVTab(hbox);
 
-        // Update the geometry hints; new tab could have different font 
-        vterm->window_set_size();
-
         // Sync the window title 
         const char* title = gtk_label_get_text(GTK_LABEL(vtab->tab_label));
         vterm->sync_window_title(title);
+
+        // Sets the show tab policy for NEEDED
+        if(VConf(show_tab_policy) == NEEDED){
+                gtk_notebook_set_show_tabs(vterm->notebook, 
+                                           (gtk_notebook_get_n_pages(vterm->notebook) == 1)?
+                                            false : true);
+        }
+
+        // Update the geometry hints; new tab could have different font and we
+        // might have added/deleted the tabs bar
+        window_set_size();
+
     }
 
     gboolean VTerm::window_key_press_cb(GtkWidget* _window, GdkEventKey* event, gpointer _data){
@@ -88,9 +97,8 @@ namespace VTERM{
          * and the allocated size is not a multiple of char width/height; we
          * cant really do anything about it.
          */ 
-        GtkWindow* window = GTK_WINDOW(vterm->window);
         VteTerminal* vte_terminal = VTE_TERMINAL(vtab->vte_terminal);
-        GtkWidget* hbox = vtab->hbox;
+        GtkWidget* notebook = GTK_WIDGET(vterm->notebook);
 
         // So, first.. get the char width/height
         gint cell_width = vte_terminal_get_char_width(vte_terminal);
@@ -101,54 +109,50 @@ namespace VTERM{
         gint row_count = vte_terminal_get_row_count(vte_terminal);
         DEBUG_PRINT("col_count: %d, row_count: %d\n", col_count, row_count);
 
+        // Now size of chrome
+        GtkRequisition notebook_request;
+        gtk_widget_get_preferred_size(notebook, NULL, &notebook_request);
+
+        gint chrome_width = notebook_request.width - (cell_width * col_count);
+        gint chrome_height = notebook_request.height - (cell_height * row_count);
+        DEBUG_PRINT("chrome_width: %d, chrome_height: %d\n", chrome_width, chrome_height);
+
         gint csd_width = 0;
         gint csd_height = 0;
 
-        // Now size of csd 
-        GtkAllocation toplevel, contents;
-        gtk_widget_get_allocation(GTK_WIDGET(window), &toplevel);
-        gtk_widget_get_allocation(hbox, &contents);
+        if(gtk_widget_get_realized(vterm->window) && VConf(window_size_hints)){
+            // Now size of csd 
+            GtkAllocation toplevel, contents;
+            gtk_widget_get_allocation(vterm->window, &toplevel);
+            gtk_widget_get_allocation(notebook, &contents);
 
-        csd_width = toplevel.width - contents.width;
-        csd_height = toplevel.height - contents.height;
-        DEBUG_PRINT("csd_width: %d, csd_height: %d\n", csd_width, csd_height);
+            csd_width = toplevel.width - contents.width;
+            csd_height = toplevel.height - contents.height;
+            DEBUG_PRINT("csd_width: %d, csd_height: %d\n", csd_width, csd_height);
 
-        // Now size of chrome
-        GtkRequisition hbox_request;
-        gtk_widget_get_preferred_size(hbox, NULL, &hbox_request);
+            // Now we set the size hints
+            GdkGeometry geometry;
 
-        gint chrome_width = hbox_request.width - (cell_width * col_count);
-        gint chrome_height = hbox_request.height - (cell_height * row_count);
-        DEBUG_PRINT("chrome_width: %d, chrome_height: %d\n", chrome_width, chrome_height);
+            geometry.base_width = csd_width + chrome_width;
+            geometry.base_height = csd_height + chrome_height;
+            geometry.width_inc = cell_width;
+            geometry.height_inc = cell_height;
+            geometry.min_width = geometry.base_width + cell_width * 5;
+            geometry.min_height = geometry.base_height + cell_height * 2;
 
-        // Now we set the size hints
-        if (VConf(window_size_hints)) {
-
-                GdkGeometry geometry;
-
-                geometry.base_width = csd_width + chrome_width;
-                geometry.base_height = csd_height + chrome_height;
-                geometry.width_inc = cell_width;
-                geometry.height_inc = cell_height;
-                geometry.min_width = geometry.base_width + cell_width * 5;
-                geometry.min_height = geometry.base_height + cell_height * 2;
-
-                gtk_window_set_geometry_hints(GTK_WINDOW(window),
-                                              nullptr,
-                                              &geometry,
-                                              GdkWindowHints(GDK_HINT_RESIZE_INC |
-                                                             GDK_HINT_MIN_SIZE |
-                                                             GDK_HINT_BASE_SIZE));
+            gtk_window_set_geometry_hints(GTK_WINDOW(vterm->window),
+                                          nullptr,
+                                          &geometry,
+                                          GdkWindowHints(GDK_HINT_RESIZE_INC |
+                                                         GDK_HINT_MIN_SIZE |
+                                                         GDK_HINT_BASE_SIZE));
         }
 
-        // Now update our records with the new size information for
-        // window_set_size to use them
-        if(gtk_widget_get_realized(vterm->window)){
-            vterm->window_width_cache = csd_width + chrome_width + cell_width * col_count;
-            vterm->window_height_cache = csd_height + chrome_height + cell_height * row_count;
-            DEBUG_PRINT("window_width_cache: %d, window_height_cache: %d\n", 
-                        vterm->window_width_cache, vterm->window_height_cache);
-        }
+
+        vterm->window_width_cache = chrome_width + cell_width * col_count;
+        vterm->window_height_cache = chrome_height + cell_height * row_count;
+        DEBUG_PRINT("window_width_cache: %d, window_height_cache: %d\n", 
+                    vterm->window_width_cache, vterm->window_height_cache);
     }
 
     void VTerm::window_set_size(){
@@ -164,7 +168,7 @@ namespace VTERM{
             return;
 
         // If we have been realized, and csd size were figured out, resize..
-        if(gtk_widget_get_realized(vterm->window)){ 
+        if(vterm->window_width_cache > 0 && vterm->window_height_cache > 0){ 
 
             DEBUG_PRINT("Resizing window: (%dX%d)\n", 
                         vterm->window_width_cache, vterm->window_height_cache);

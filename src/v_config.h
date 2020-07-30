@@ -121,11 +121,11 @@ namespace VTERM{
         // Always show tabs
         ALWAYS,
 
-        // Show tabs only if > 1
+        // Show tabs at navigation
         SMART,
 
-        // Show at key press
-        AUTO,
+        // Show tabs only if #tabs > 1
+        NEEDED,
     };
 
     /*
@@ -214,7 +214,7 @@ namespace VTERM{
             GtkPositionType tabs_position = GTK_POS_TOP;
 
             //TODO: autohide & smart hide
-            ShowTabPolicy show_tab_policy = ALWAYS;
+            ShowTabPolicy show_tab_policy = NEEDED;
 
             gboolean tab_label_trim_first = true,
                      insert_after_current = true,
@@ -273,6 +273,7 @@ namespace VTERM{
                 gtk_notebook_set_scrollable(notebook, true);
                 gtk_notebook_set_show_border(notebook, false);
                 gtk_widget_set_can_focus(GTK_WIDGET(notebook), false);
+                gtk_notebook_set_show_tabs(notebook, (show_tab_policy == ALWAYS) ? true : false);
             }
 
             /*
@@ -482,7 +483,7 @@ namespace VTERM{
                 PARSE_STRING(behavior, show_tab_policy,
                         "always", ALWAYS, 
                         "smart", SMART,
-                        "auto", AUTO)
+                        "needed", NEEDED)
 
                 get_bool_or_def("behavior", "tab_label_trim_first", &tab_label_trim_first);
                 get_bool_or_def("behavior", "insert_after_current", &insert_after_current);
