@@ -58,7 +58,7 @@ namespace VTERM{
         VTab* vtab = vterm->getVTab(hbox);
 
         // Sync the window title 
-        const char* title = gtk_label_get_text(GTK_LABEL(vtab->tab_label));
+        const gchar* title = gtk_label_get_text(GTK_LABEL(vtab->tab_label));
         vterm->sync_window_title(title);
 
         // Sets the show tab policy for NEEDED
@@ -71,7 +71,6 @@ namespace VTERM{
         // Update the geometry hints; new tab could have different font and we
         // might have added/deleted the tabs bar
         window_set_size();
-
     }
 
     gboolean VTerm::window_key_press_cb(GtkWidget* _window, GdkEventKey* event, gpointer _data){
@@ -148,7 +147,6 @@ namespace VTERM{
                                                          GDK_HINT_BASE_SIZE));
         }
 
-
         vterm->window_width_cache = chrome_width + cell_width * col_count;
         vterm->window_height_cache = chrome_height + cell_height * row_count;
         DEBUG_PRINT("window_width_cache: %d, window_height_cache: %d\n", 
@@ -157,6 +155,10 @@ namespace VTERM{
 
     void VTerm::window_set_size(){
         VTab* vtab = vterm->getCurrentVTab();
+
+        // If we dont have any tab, no need yet..
+        if(!vtab)
+            return;
 
         // Are we up-to-date?
         window_update_geometry(vtab);
@@ -196,9 +198,9 @@ namespace VTERM{
     }
 
     void VTerm::run(){
-        VTab::create_tab(true);
-
         gtk_widget_show_all(window);
+
+        VTab::create_tab(true);
 
         // fire!
         gtk_main();

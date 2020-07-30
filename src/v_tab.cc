@@ -3,6 +3,8 @@
 #include "v_term.h"
 #include <memory>
 #include "v_config.h"
+#include <gdk/gdkx.h>
+#include <limits>
 
 using namespace std;
 
@@ -33,13 +35,28 @@ namespace VTERM{
 
     void VTab::terminal_title_changed_cb(VteTerminal* vte_terminal, gpointer data){
         VTab* vtab = (VTab*)data;
-        const char* title = vte_terminal_get_window_title(VTE_TERMINAL(vte_terminal));
+        const gchar* title = vte_terminal_get_window_title(VTE_TERMINAL(vte_terminal));
         vtab->sync_tab_label(title);
         vterm->sync_window_title(title);
     }
 
     VTab* VTab::create_tab(gboolean is_first_tab){
         gchar *cwd = VConf(cli_cwd), **cmd = VConf(cli_cmd), **env = nullptr;
+
+#ifdef GDK_WINDOWING_X11
+    env = g_get_environ();
+    if (GDK_IS_X11_SCREEN(gtk_widget_get_screen(vterm->window))) {
+        GdkWindow *gdk_window = gtk_widget_get_window(vterm->window);
+        if (gdk_window) {
+            char xid_s[std::numeric_limits<long unsigned>::digits10 + 1];
+            snprintf(xid_s, sizeof(xid_s), "%lu", GDK_WINDOW_XID(gdk_window));
+            env = g_environ_setenv(env, "WINDOWID", xid_s, TRUE);
+        }else{
+            DEBUG_PRINT("No gdk window.\n");
+        }
+    }
+#endif
+
         if(is_first_tab){
             // first tab always use cli or defaults 
             if(!cmd)
