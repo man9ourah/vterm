@@ -38,11 +38,13 @@ namespace VTERM{
 
     gboolean VTerm::window_focus_changed_cb(GtkWidget* _window, GdkEvent *event, gpointer _data){
         GdkEventFocus* fe = (GdkEventFocus*)event;
-        VteTerminal* current_vte_terminal = VTE_TERMINAL(vterm->getCurrentVTab()->vte_terminal);
-        if(fe->in)
-            vte_terminal_set_color_background(current_vte_terminal, &VConf(color_background)); 
-        else
-            vte_terminal_set_color_background(current_vte_terminal, &VConf(focus_out_color_background)); 
+        if(VTab* current_tab = vterm->getCurrentVTab()){
+            VteTerminal* current_vte_terminal = VTE_TERMINAL(current_tab->vte_terminal);
+            if(fe->in)
+                vte_terminal_set_color_background(current_vte_terminal, &VConf(color_background)); 
+            else
+                vte_terminal_set_color_background(current_vte_terminal, &VConf(focus_out_color_background));
+        }
         return false;
     }
 
@@ -180,12 +182,12 @@ namespace VTERM{
     }
 
     void VTerm::connect_signals(){
-        g_signal_connect(window, "key-press-event", G_CALLBACK(window_key_press_cb), this);
-        g_signal_connect(window, "realize", G_CALLBACK(window_set_size), this);
+        g_signal_connect(window, "key-press-event", G_CALLBACK(window_key_press_cb), nullptr);
+        g_signal_connect(window, "realize", G_CALLBACK(window_set_size), nullptr);
 
         if(VConf(focus_aware_color_background)){
-            g_signal_connect(window, "focus-in-event", G_CALLBACK(window_focus_changed_cb), this);
-            g_signal_connect(window, "focus-out-event", G_CALLBACK(window_focus_changed_cb), this);
+            g_signal_connect(window, "focus-in-event", G_CALLBACK(window_focus_changed_cb), nullptr);
+            g_signal_connect(window, "focus-out-event", G_CALLBACK(window_focus_changed_cb), nullptr);
         }
 
         g_signal_connect(notebook, "switch-page", G_CALLBACK(notebook_switch_page_cb), nullptr);
@@ -194,7 +196,7 @@ namespace VTERM{
             g_signal_connect(window, "screen-changed", 
                     G_CALLBACK(window_screen_changed_cb), nullptr);
 
-        g_signal_connect(window, "destroy", exit_success, NULL);
+        g_signal_connect(window, "destroy", exit_success, nullptr);
     }
 
     void VTerm::run(){
