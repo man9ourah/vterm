@@ -54,22 +54,22 @@
 /*
  * Up prompt
  */
-#define VKEY_UP_PROMPT GDK_KEY_k
+#define VKEY_UP_PROMPT GDK_KEY_i
 
 /*
  * Down prompt
  */
-#define VKEY_DOWN_PROMPT GDK_KEY_j
+#define VKEY_DOWN_PROMPT GDK_KEY_o
 
 /*
  * Move tab to right
  */
-#define VKEY_MOVE_TAB_RIGHT GDK_KEY_parenright
+#define VKEY_MOVE_TAB_RIGHT GDK_KEY_k
 
 /*
  * Move tab to left
  */
-#define VKEY_MOVE_TAB_LEFT GDK_KEY_parenleft
+#define VKEY_MOVE_TAB_LEFT GDK_KEY_j
 
 /*
  * Copy selected text to clipboard
