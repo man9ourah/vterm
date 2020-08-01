@@ -47,8 +47,31 @@ namespace VTERM{
         const guint keypressed = gdk_keyval_to_lower(event->keyval);
         VTab* vtab = (VTab*)data;
 
+        /*
+         * This will get really complicated.. so:
+         *  - NO FALL THROUGH!! direct fall through when there is no code between 
+         *  two cases are fine.
+         *
+         *  - If case is entered, it should RETURN from the function. It should
+         *  not depend on any logic after its parent switch case.
+         *
+         *  - All cases should be surrounded by {}
+         *
+         */
+
+        /*
+         * We first see to keybindings that should work in all modes.
+         */
         if(modifiers == VKEY_MODIFIER){
             switch(keypressed){
+
+                /*
+                 * Toggle normal mode
+                 */
+                case VKEY_TOGGLE_NORMAL:{
+                    vtab->switch_mode(ModeInfo::ModeOp::NORMAL_MODE);
+                    return true;
+                }
 
                 /*
                  * Close this tab
@@ -123,13 +146,12 @@ namespace VTERM{
                     return true;
                 }
             }
-        } // endif (modifiers == VKEY_MODIFIER)
 
         /*
          * Control only keybindings
          * pretty stnadard keybindings
          */
-        if(modifiers == GDK_CONTROL_MASK){
+        }else if(modifiers == GDK_CONTROL_MASK){
             switch(keypressed){
                 /*
                  * Standard zoom in keybinding
@@ -161,6 +183,59 @@ namespace VTERM{
                     return true;
                 }
             }
+        } // endif (modifiers == GDK_CONTROL_MASK)
+
+        /*
+         * Now to the keybindings that are specific to certain modes
+         */
+        switch(vtab->current_mode.mode){
+            /*
+             * Keybindings specific to normal mode
+             */
+            case ModeInfo::ModeOp::NORMAL_MODE:{
+                if(modifiers == GDK_CONTROL_MASK){
+
+                }else{
+                    switch(keypressed){
+                        case GDK_KEY_k:
+                        case GDK_KEY_Up:{
+                            DEBUG_PRINT("\nNormal: cursor up\n");
+                            return true;
+                        }
+
+                        case GDK_KEY_j:
+                        case GDK_KEY_Down:{
+                            DEBUG_PRINT("\nNormal: cursor down\n");
+                            return true;
+                        }
+
+                        case GDK_KEY_l:
+                        case GDK_KEY_Left:{
+                            DEBUG_PRINT("\nNormal: cursor left\n");
+                            return true;
+                        }
+
+                        case GDK_KEY_h:
+                        case GDK_KEY_Right:{
+                            DEBUG_PRINT("\nNormal: cursor right\n");
+                            return true;
+                        }
+
+                    }
+                }
+
+                // Do not pass any event when in normal mode
+                return true;
+            }
+
+            /*
+             * Keybindings specific to insert mode
+             */
+            case ModeInfo::ModeOp::INSERT_MODE:{
+                // None
+                // Pass event
+                return false;
+            }
         }
 
         return false;
@@ -178,7 +253,7 @@ namespace VTERM{
                 snprintf(xid_s, sizeof(xid_s), "%lu", GDK_WINDOW_XID(gdk_window));
                 env = g_environ_setenv(env, "WINDOWID", xid_s, TRUE);
             }else{
-                DEBUG_PRINT("No gdk window.\n");
+                g_printerr("No gdk window.\n");
             }
         }
 #endif
@@ -230,6 +305,60 @@ namespace VTERM{
         g_signal_connect(vte_terminal, "key-press-event", G_CALLBACK(terminal_key_press_cb), this);
         g_signal_connect(vte_terminal, "child-exited", G_CALLBACK(VTab::terminal_child_exit_cb), this);
         g_signal_connect(vte_terminal, "window-title-changed", G_CALLBACK(VTab::terminal_title_changed_cb), this);
+    }
+
+    void VTab::switch_mode(ModeInfo::ModeOp new_mode){
+        // First, what mode are we in?
+        switch(current_mode.mode){
+            case ModeInfo::ModeOp::NORMAL_MODE:{
+
+                // We are in normal mode
+                // What mode we want to switch to?
+                switch(new_mode){
+                    /*
+                     * normal->normal TOGGLE(insert)
+                     * normal->insert
+                     */
+                    case ModeInfo::ModeOp::NORMAL_MODE:
+                    case ModeInfo::ModeOp::INSERT_MODE:{
+                        DEBUG_PRINT("\nNORMAL->INSERT\n");
+                        current_mode.mode = ModeInfo::ModeOp::INSERT_MODE;
+                        vte_terminal_set_input_enabled(VTE_TERMINAL(vte_terminal), true);
+                        return;
+                    }
+                }
+
+                return;
+            }
+
+            case ModeInfo::ModeOp::INSERT_MODE:{
+
+                // We are in insert mode
+                // What mode we want to switch to?
+                switch(new_mode){
+                    /*
+                     * insert->normal
+                     */
+                    case ModeInfo::ModeOp::NORMAL_MODE:{
+                        DEBUG_PRINT("\nINSERT->NORMAL\n");
+                        current_mode.mode = ModeInfo::ModeOp::NORMAL_MODE;
+                        vte_terminal_set_input_enabled(VTE_TERMINAL(vte_terminal), false);
+                        return;
+                    }
+
+                    /*
+                     * insert->insert
+                     * this should never happen
+                     */
+                    case ModeInfo::ModeOp::INSERT_MODE:{
+                        DEBUG_PRINT("\nINSERT->INSERT\n");
+                        return;
+                    }
+                }
+
+                return;
+            }
+        }
     }
 
     VTab::VTab(gchar* cwd, gchar** cmd, gchar** env){

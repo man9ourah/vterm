@@ -8,6 +8,7 @@
 using namespace std;
 namespace VTERM{
 
+
     /*
      * Represent one tab
      */
@@ -29,6 +30,19 @@ namespace VTERM{
             gboolean in_destruction = false;
 
             /*
+             * Struct encapsulating one mode info
+             */
+            struct ModeInfo{
+                // Which mode?
+                enum ModeOp{
+                    INSERT_MODE = 0,
+
+                    NORMAL_MODE,
+                } mode;
+
+            } current_mode;
+
+            /*
              * Static instance builder to decide cmd & cwd
              */
             static VTab* create_tab(gboolean is_first_tab);
@@ -45,6 +59,11 @@ namespace VTERM{
              * Connect signals of widgets under vtab
              */
             void connect_signals();
+
+            /*
+             * Switches the tab to new mode
+             */
+            void switch_mode(ModeInfo::ModeOp new_mode);
 
             /*
              * TODO:: Should we disconnect signals the way gnome terminal do?
