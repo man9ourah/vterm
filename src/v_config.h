@@ -213,7 +213,6 @@ namespace VTERM{
              */
             GtkPositionType tabs_position = GTK_POS_TOP;
 
-            //TODO: autohide & smart hide
             ShowTabPolicy show_tab_policy = NEEDED;
 
             gboolean tab_label_trim_first = true,

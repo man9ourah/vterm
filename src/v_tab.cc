@@ -5,6 +5,7 @@
 #include "v_config.h"
 #include <gdk/gdkx.h>
 #include <limits>
+#include "v_keybindings.h"
 
 using namespace std;
 
@@ -29,8 +30,8 @@ namespace VTERM{
         }
     }
 
-    void VTab::terminal_child_exit_cb(VteTerminal* _vte_terminal, gint _status, gpointer vtab){
-        vterm->deleteVTab(((VTab*)vtab));
+    void VTab::terminal_child_exit_cb(VteTerminal* _vte_terminal, gint _status, gpointer data){
+        vterm->deleteVTab(((VTab*)data));
     }
 
     void VTab::terminal_title_changed_cb(VteTerminal* vte_terminal, gpointer data){
@@ -40,21 +41,121 @@ namespace VTERM{
         vterm->sync_window_title(title);
     }
 
+    gboolean VTab::terminal_key_press_cb(GtkWidget* vte_terminal, GdkEventKey* event, gpointer data){
+        const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
+        const guint keypressed = gdk_keyval_to_lower(event->keyval);
+        VTab* vtab = (VTab*)data;
+
+        if(modifiers == VKEY_MODIFIER){
+            switch(keypressed){
+
+                /*
+                 * Close this tab
+                 */
+                case VKEY_CLOSE_TAB:{
+                    vterm->deleteVTab(vtab);
+                    return true;
+                }
+
+                /*
+                 * Prompt scroll up
+                 */
+                case VKEY_UP_PROMPT:{
+                    vte_terminal_prompt_prev(VTE_TERMINAL(vte_terminal));
+                    return true;
+                }
+
+                /*
+                 * Prompt scroll down
+                 */
+                case VKEY_DOWN_PROMPT:{
+                    vte_terminal_prompt_next(VTE_TERMINAL(vte_terminal));
+                    return true;
+                }
+
+                /*
+                 * Move tab to right
+                 */
+                case VKEY_MOVE_TAB_RIGHT:{
+                    gint max_pn = gtk_notebook_get_n_pages(vterm->notebook);
+                    gtk_notebook_reorder_child(vterm->notebook, vtab->hbox,
+                            (gtk_notebook_page_num(vterm->notebook, vtab->hbox) + 1) % max_pn);
+                    return true;
+                }
+
+                /*
+                 * Move tab to left
+                 */
+                case VKEY_MOVE_TAB_LEFT:{
+                    gtk_notebook_reorder_child(vterm->notebook, vtab->hbox,
+                            gtk_notebook_page_num(vterm->notebook, vtab->hbox) - 1);
+                    return true;
+                }
+
+                /*
+                 * Copy
+                 */
+                case VKEY_COPY:{
+                    vte_terminal_copy_clipboard_format(VTE_TERMINAL(vte_terminal), VTE_FORMAT_TEXT);
+                    return true;
+                }
+
+                /*
+                 * Paste
+                 */
+                case VKEY_PASTE:{
+                    vte_terminal_paste_clipboard(VTE_TERMINAL(vte_terminal));
+                    return true;
+                }
+
+                /*
+                 * Zoom in
+                 */
+                case VKEY_FONT_INCREASE:{
+                    vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal),
+                            vte_terminal_get_font_scale(VTE_TERMINAL(vte_terminal)) * 1.2);
+                    VTerm::window_set_size();
+                    return true;
+                }
+
+                /*
+                 * Zoom out
+                 */
+                case VKEY_FONT_DECREASE:{
+                    vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal),
+                            vte_terminal_get_font_scale(VTE_TERMINAL(vte_terminal)) / 1.2);
+                    VTerm::window_set_size();
+                    return true;
+                }
+
+                /*
+                 * Reset font scale
+                 */
+                case VKEY_FONT_RESET:{
+                    vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal), VConf(font_scale));
+                    VTerm::window_set_size();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     VTab* VTab::create_tab(gboolean is_first_tab){
         gchar *cwd = VConf(cli_cwd), **cmd = VConf(cli_cmd), **env = nullptr;
 
 #ifdef GDK_WINDOWING_X11
-    env = g_get_environ();
-    if (GDK_IS_X11_SCREEN(gtk_widget_get_screen(vterm->window))) {
-        GdkWindow *gdk_window = gtk_widget_get_window(vterm->window);
-        if (gdk_window) {
-            char xid_s[std::numeric_limits<long unsigned>::digits10 + 1];
-            snprintf(xid_s, sizeof(xid_s), "%lu", GDK_WINDOW_XID(gdk_window));
-            env = g_environ_setenv(env, "WINDOWID", xid_s, TRUE);
-        }else{
-            DEBUG_PRINT("No gdk window.\n");
+        env = g_get_environ();
+        if (GDK_IS_X11_SCREEN(gtk_widget_get_screen(vterm->window))) {
+            GdkWindow *gdk_window = gtk_widget_get_window(vterm->window);
+            if (gdk_window) {
+                char xid_s[std::numeric_limits<long unsigned>::digits10 + 1];
+                snprintf(xid_s, sizeof(xid_s), "%lu", GDK_WINDOW_XID(gdk_window));
+                env = g_environ_setenv(env, "WINDOWID", xid_s, TRUE);
+            }else{
+                DEBUG_PRINT("No gdk window.\n");
+            }
         }
-    }
 #endif
 
         if(is_first_tab){
@@ -100,6 +201,8 @@ namespace VTERM{
     }
 
     void VTab::connect_signals(){
+        //TODO:: handle resize-window signal
+        g_signal_connect(vte_terminal, "key-press-event", G_CALLBACK(terminal_key_press_cb), this);
         g_signal_connect(vte_terminal, "child-exited", G_CALLBACK(VTab::terminal_child_exit_cb), this);
         g_signal_connect(vte_terminal, "window-title-changed", G_CALLBACK(VTab::terminal_title_changed_cb), this);
     }
@@ -133,7 +236,6 @@ namespace VTERM{
         GSpawnFlags spawn_flags = G_SPAWN_SEARCH_PATH_FROM_ENVP;
         vte_terminal_spawn_async(VTE_TERMINAL(vte_terminal), VTE_PTY_DEFAULT, cwd, cmd, env,
                 spawn_flags, NULL, NULL, NULL, -1, NULL, terminal_create_cb, this);
-
     }
 
 }

@@ -25,7 +25,9 @@ namespace VTERM{
             // terminal scrollbar
             GtkWidget* scrollbar;
 
-        public:
+            // Flag that we are being destructed
+            gboolean in_destruction = false;
+
             /*
              * Static instance builder to decide cmd & cwd
              */
@@ -37,11 +39,16 @@ namespace VTERM{
             static void terminal_child_exit_cb(VteTerminal* _vte_terminal, gint _status, gpointer data);
             static void terminal_title_changed_cb(VteTerminal* vte_terminal, gpointer data);
             static void terminal_create_cb(VteTerminal* _vte_terminal, GPid pid, GError *error, gpointer data);
+            static gboolean terminal_key_press_cb(GtkWidget* terminal, GdkEventKey* event, gpointer data);
 
             /*
              * Connect signals of widgets under vtab
              */
             void connect_signals();
+
+            /*
+             * TODO:: Should we disconnect signals the way gnome terminal do?
+             */
 
             /*
              * Create a new tab label

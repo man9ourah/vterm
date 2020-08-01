@@ -27,6 +27,12 @@ namespace VTERM{
             // up-to-date window size info
             gint window_width_cache = -1, window_height_cache = -1;
 
+            // Alternate tab
+            VTab* alternate_tab = nullptr;
+
+            // Current tab
+            VTab* current_tab = nullptr;
+
             /*
              * Default constructor & destructor
              */
@@ -37,13 +43,14 @@ namespace VTERM{
              * Events callback functions
              */
             static gboolean window_focus_changed_cb(GtkWidget* _window, GdkEvent *event, gpointer _data);
+
             static void window_screen_changed_cb(GtkWidget* window, GdkScreen* _prev_screen, gpointer _data);
+
             static void notebook_switch_page_cb(GtkNotebook* _notebook, GtkWidget* hbox,
                     guint _page_nu, gpointer _data);
 
-            //TODO:: Configurable keymap and clean way of handling these events
-            // Check: gdk_keyval_from_name
             static gboolean window_key_press_cb(GtkWidget* window, GdkEventKey* event, gpointer data);
+            static gboolean window_key_release_cb(GtkWidget* window, GdkEventKey* event, gpointer data);
 
             /*
              * Updates the window's geometry hints to the WM
@@ -125,15 +132,16 @@ namespace VTERM{
 
                 // Give focus to terminal
                 gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
-
-                // Queue notebook for redraw
-                gtk_widget_queue_draw(GTK_WIDGET(notebook));
             }
 
             /*
              * Deletes vtab
              */
             void deleteVTab(VTab* vtab){
+                if(vtab->in_destruction)
+                    return;
+
+                vtab->in_destruction = true;
                 GtkWidget* hbox = vtab->hbox;
 
                 // If the only tab, exit with success

@@ -1,8 +1,10 @@
 #include "v_term.h"
+#include "gdk/gdkkeysyms.h"
 #include "v_config.h"
 #include "v_tab.h"
 #include <memory>
 #include "common.h"
+#include "v_keybindings.h"
 
 using namespace std;
 namespace VTERM{
@@ -65,25 +67,135 @@ namespace VTERM{
 
         // Sets the show tab policy for NEEDED
         if(VConf(show_tab_policy) == NEEDED){
-                gtk_notebook_set_show_tabs(vterm->notebook,
-                                           (gtk_notebook_get_n_pages(vterm->notebook) == 1)?
-                                            false : true);
+            gtk_notebook_set_show_tabs(vterm->notebook,
+                                       (gtk_notebook_get_n_pages(vterm->notebook) == 1)?
+                                        false : true);
         }
+
+        // Hide not showing tabs to make them not affect the terminal window
+        // size.. similar to gnome-terminal behavior
+        if(vterm->current_tab)
+            gtk_widget_hide(vterm->current_tab->vte_terminal);
+
+        gtk_widget_show_all(vtab->hbox);
+
+        vterm->alternate_tab = vterm->current_tab;
+        vterm->current_tab = vtab;
 
         // Update the geometry hints; new tab could have different font and we
         // might have added/deleted the tabs bar
         window_set_size();
+
+        // Give focus to terminal
+        gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
     }
 
     gboolean VTerm::window_key_press_cb(GtkWidget* _window, GdkEventKey* event, gpointer _data){
         const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
+        const guint keypressed = gdk_keyval_to_lower(event->keyval);
 
-        if(modifiers == (GDK_CONTROL_MASK|GDK_SHIFT_MASK)){
-           switch(gdk_keyval_to_lower(event->keyval)){
-                case GDK_KEY_t:
+        if((VConf(show_tab_policy) == SMART) &&
+           ((keypressed == GDK_KEY_Control_L && modifiers == GDK_SHIFT_MASK) ||
+           (keypressed == GDK_KEY_Control_R && modifiers == GDK_SHIFT_MASK) ||
+           (keypressed == GDK_KEY_Shift_L && modifiers == GDK_CONTROL_MASK) ||
+           (keypressed == GDK_KEY_Shift_R && modifiers == GDK_CONTROL_MASK))){
+
+            // Sets the show tab policy for SMART
+            gtk_notebook_set_show_tabs(vterm->notebook, true);
+
+            // Update window size
+            window_set_size();
+
+            // Allow others to catch this too
+            return false;
+        }
+
+        if(modifiers == VKEY_MODIFIER){
+            switch(keypressed){
+
+                /*
+                 * Opens a new tab
+                 */
+                case VKEY_NEW_TAB:{
                     VTab::create_tab(false);
-                    break;
-           }
+                    return true;
+                }
+
+                /*
+                 * Go to the next tab
+                 */
+                case VKEY_NEXT_TAB:{
+                    gint current_pn = gtk_notebook_get_current_page(vterm->notebook);
+                    gint max_pn = gtk_notebook_get_n_pages(vterm->notebook);
+                    gtk_notebook_set_current_page(vterm->notebook, (current_pn + 1) % max_pn);
+                    return true;
+                }
+
+                /*
+                 * Go to the previous tab
+                 */
+                case VKEY_PREV_TAB:{
+                    gint current_pn = gtk_notebook_get_current_page(vterm->notebook);
+                    gtk_notebook_set_current_page(vterm->notebook, --current_pn);
+                    return true;
+                }
+
+                /*
+                 * Go to the alternate tab
+                 */
+                case VKEY_ALTERNATE_TAB:{
+                    gint alternate_pn = gtk_notebook_page_num(vterm->notebook,
+                                                              vterm->alternate_tab->hbox);
+                    if(alternate_pn >= 0)
+                        gtk_notebook_set_current_page(vterm->notebook, alternate_pn);
+                    return true;
+                }
+
+                /*
+                 * Go to the first tab
+                 */
+                case VKEY_FAST_ACCESS_1:{
+                        gtk_notebook_set_current_page(vterm->notebook, 0);
+                    return true;
+                }
+
+                /*
+                 * Go to the second tab
+                 */
+                case VKEY_FAST_ACCESS_2:{
+                        gtk_notebook_set_current_page(vterm->notebook, 1);
+                    return true;
+                }
+
+                /*
+                 * Go to the first tab
+                 */
+                case VKEY_FAST_ACCESS_3:{
+                        gtk_notebook_set_current_page(vterm->notebook, 2);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    gboolean VTerm::window_key_release_cb(GtkWidget* _window, GdkEventKey* event, gpointer _data){
+        const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
+        const guint keyreleased = gdk_keyval_to_lower(event->keyval);
+
+        // We are doing smart policy
+        if((VConf(show_tab_policy) == SMART) &&
+            (
+             // And we released one of the modifiers
+             (keyreleased == GDK_KEY_Control_L) ||
+             (keyreleased == GDK_KEY_Control_R) ||
+             (keyreleased == GDK_KEY_Shift_L) ||
+             (keyreleased == GDK_KEY_Shift_R)
+            )){
+            // Sets the show tab policy for SMART
+            gtk_notebook_set_show_tabs(vterm->notebook, false);
+            // and update the window size
+            window_set_size();
         }
         return false;
     }
@@ -183,6 +295,7 @@ namespace VTERM{
 
     void VTerm::connect_signals(){
         g_signal_connect(window, "key-press-event", G_CALLBACK(window_key_press_cb), nullptr);
+        g_signal_connect(window, "key-release-event", G_CALLBACK(window_key_release_cb), nullptr);
         g_signal_connect(window, "realize", G_CALLBACK(window_set_size), nullptr);
 
         if(VConf(focus_aware_color_background)){
