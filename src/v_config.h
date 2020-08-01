@@ -94,7 +94,7 @@ namespace VTERM{
      */
     enum NewTabCWD{
         // Use cwd of the current tab.
-        CURRENT_TAB_CWD,
+        CURRENT_TAB_CWD = 0,
 
         // Use cwd passed in cli
         CLI_CWD,
@@ -108,7 +108,7 @@ namespace VTERM{
      */
     enum NewTabCMD{
         // Use default user shell
-        DEFAULT_CMD,
+        DEFAULT_CMD = 0,
 
         // Use the command pass in cli for all tabs
         CLI_CMD
@@ -119,7 +119,7 @@ namespace VTERM{
      */
     enum ShowTabPolicy{
         // Always show tabs
-        ALWAYS,
+        ALWAYS = 0,
 
         // Show tabs at navigation
         SMART,
