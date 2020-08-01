@@ -229,7 +229,7 @@ namespace VTERM{
     }
 
     void VTerm::window_update_geometry(VTab* vtab){
-        DEBUG_PRINT("\nUpdating window geometry..\n");
+        DEBUG_PRINT("\nWINDOW_SIZE: Updating window geometry..\n");
         /*
          * Ideally, we want a window size that is a multiple of char width and
          * height.. this will give us a terminal window that fits well around the
@@ -244,11 +244,11 @@ namespace VTERM{
         // So, first.. get the char width/height
         gint cell_width = vte_terminal_get_char_width(vte_terminal);
         gint cell_height = vte_terminal_get_char_height(vte_terminal);
-        DEBUG_PRINT("cell_width: %d, cell_height: %d\n", cell_width, cell_height);
+        DEBUG_PRINT("WINDOW_SIZE: cell_width: %d, cell_height: %d\n", cell_width, cell_height);
 
         gint col_count = vte_terminal_get_column_count(vte_terminal);
         gint row_count = vte_terminal_get_row_count(vte_terminal);
-        DEBUG_PRINT("col_count: %d, row_count: %d\n", col_count, row_count);
+        DEBUG_PRINT("WINDOW_SIZE: col_count: %d, row_count: %d\n", col_count, row_count);
 
         // Now size of chrome
         GtkRequisition notebook_request;
@@ -256,7 +256,7 @@ namespace VTERM{
 
         gint chrome_width = notebook_request.width - (cell_width * col_count);
         gint chrome_height = notebook_request.height - (cell_height * row_count);
-        DEBUG_PRINT("chrome_width: %d, chrome_height: %d\n", chrome_width, chrome_height);
+        DEBUG_PRINT("WINDOW_SIZE: chrome_width: %d, chrome_height: %d\n", chrome_width, chrome_height);
 
         gint csd_width = 0;
         gint csd_height = 0;
@@ -269,7 +269,7 @@ namespace VTERM{
 
             csd_width = toplevel.width - contents.width;
             csd_height = toplevel.height - contents.height;
-            DEBUG_PRINT("csd_width: %d, csd_height: %d\n", csd_width, csd_height);
+            DEBUG_PRINT("WINDOW_SIZE: csd_width: %d, csd_height: %d\n", csd_width, csd_height);
 
             // Now we set the size hints
             GdkGeometry geometry;
@@ -291,7 +291,7 @@ namespace VTERM{
 
         vterm->window_width_cache = chrome_width + cell_width * col_count;
         vterm->window_height_cache = chrome_height + cell_height * row_count;
-        DEBUG_PRINT("window_width_cache: %d, window_height_cache: %d\n",
+        DEBUG_PRINT("WINDOW_SIZE: window_width_cache: %d, window_height_cache: %d\n",
                     vterm->window_width_cache, vterm->window_height_cache);
     }
 
@@ -314,7 +314,7 @@ namespace VTERM{
         // If we have been realized, and csd size were figured out, resize..
         if(vterm->window_width_cache > 0 && vterm->window_height_cache > 0){
 
-            DEBUG_PRINT("Resizing window: (%dX%d)\n",
+            DEBUG_PRINT("WINDOW_SIZE: Resizing window: (%dX%d)\n",
                         vterm->window_width_cache, vterm->window_height_cache);
             gtk_window_resize(GTK_WINDOW(vterm->window),
                               vterm->window_width_cache, vterm->window_height_cache);
