@@ -81,17 +81,3 @@
  */
 #define VKEY_PASTE GDK_KEY_v
 
-/*
- * Increase font size
- */
-#define VKEY_FONT_INCREASE GDK_KEY_plus
-
-/*
- * Decrease font size
- */
-#define VKEY_FONT_DECREASE GDK_KEY_underscore
-
-/*
- * Reset font size
- */
-#define VKEY_FONT_RESET GDK_KEY_bar

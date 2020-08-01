@@ -168,7 +168,7 @@ namespace VTERM{
                 }
 
                 /*
-                 * Go to the first tab
+                 * Go to the third tab
                  */
                 case VKEY_FAST_ACCESS_3:{
                         gtk_notebook_set_current_page(vterm->notebook, 2);
@@ -176,6 +176,34 @@ namespace VTERM{
                 }
             }
         }
+
+        /*
+         * Control only keybindings
+         * pretty stnadard keybindings
+         */
+        if(modifiers == GDK_CONTROL_MASK){
+            switch(keypressed){
+                /*
+                 * Go to the next tab
+                 */
+                case GDK_KEY_Page_Down:{
+                    gint current_pn = gtk_notebook_get_current_page(vterm->notebook);
+                    gint max_pn = gtk_notebook_get_n_pages(vterm->notebook);
+                    gtk_notebook_set_current_page(vterm->notebook, (current_pn + 1) % max_pn);
+                    return true;
+                }
+
+                /*
+                 * Go to the previous tab
+                 */
+                case GDK_KEY_Page_Up:{
+                    gint current_pn = gtk_notebook_get_current_page(vterm->notebook);
+                    gtk_notebook_set_current_page(vterm->notebook, --current_pn);
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 

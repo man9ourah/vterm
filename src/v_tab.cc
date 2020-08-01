@@ -1,5 +1,6 @@
 #include "v_tab.h"
 #include "common.h"
+#include "gdk/gdkkeysyms.h"
 #include "v_term.h"
 #include <memory>
 #include "v_config.h"
@@ -75,7 +76,9 @@ namespace VTERM{
 
                 /*
                  * Move tab to right
+                 * PageUp seems standard for this too
                  */
+                case GDK_KEY_Page_Down:
                 case VKEY_MOVE_TAB_RIGHT:{
                     gint max_pn = gtk_notebook_get_n_pages(vterm->notebook);
                     gtk_notebook_reorder_child(vterm->notebook, vtab->hbox,
@@ -85,7 +88,9 @@ namespace VTERM{
 
                 /*
                  * Move tab to left
+                 * PageDown seems standard for this too
                  */
+                case GDK_KEY_Page_Up:
                 case VKEY_MOVE_TAB_LEFT:{
                     gtk_notebook_reorder_child(vterm->notebook, vtab->hbox,
                             gtk_notebook_page_num(vterm->notebook, vtab->hbox) - 1);
@@ -109,9 +114,27 @@ namespace VTERM{
                 }
 
                 /*
-                 * Zoom in
+                 * Standard zoom in keybinding
                  */
-                case VKEY_FONT_INCREASE:{
+                case GDK_KEY_plus:{
+                    vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal),
+                            vte_terminal_get_font_scale(VTE_TERMINAL(vte_terminal)) * 1.2);
+                    VTerm::window_set_size();
+                    return true;
+                }
+            }
+        } // endif (modifiers == VKEY_MODIFIER)
+
+        /*
+         * Control only keybindings
+         * pretty stnadard keybindings
+         */
+        if(modifiers == GDK_CONTROL_MASK){
+            switch(keypressed){
+                /*
+                 * Standard zoom in keybinding
+                 */
+                case GDK_KEY_KP_Add:{
                     vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal),
                             vte_terminal_get_font_scale(VTE_TERMINAL(vte_terminal)) * 1.2);
                     VTerm::window_set_size();
@@ -119,9 +142,10 @@ namespace VTERM{
                 }
 
                 /*
-                 * Zoom out
+                 * Standard zoom out keybinding
                  */
-                case VKEY_FONT_DECREASE:{
+                case GDK_KEY_minus:
+                case GDK_KEY_KP_Subtract:{
                     vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal),
                             vte_terminal_get_font_scale(VTE_TERMINAL(vte_terminal)) / 1.2);
                     VTerm::window_set_size();
@@ -129,15 +153,16 @@ namespace VTERM{
                 }
 
                 /*
-                 * Reset font scale
+                 * Standard? reset font scale
                  */
-                case VKEY_FONT_RESET:{
+                case GDK_KEY_equal:{
                     vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal), VConf(font_scale));
                     VTerm::window_set_size();
                     return true;
                 }
             }
         }
+
         return false;
     }
 
