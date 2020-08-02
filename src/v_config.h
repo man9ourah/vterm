@@ -7,12 +7,12 @@
 
 using namespace std;
 /*
- * Shorter name to get config values
+ * Convenience shorter name to get config values
  */
 #define VConf(key) VTERM::VConfig::getVConfig().key
 
 /*
- * Macro constructs to parse a string config, compare
+ * Macro construct to parse a string config, compare
  * it to values and assign accordingly.
  */
 #define _PARSE_STRING_START(sec, key) \
@@ -88,67 +88,57 @@ using namespace std;
                                     }
 
 namespace VTERM{
-
-    /*
-     * Possible options for new tab cwd
-     */
-    enum NewTabCWD{
-        // Use cwd of the current tab.
-        CURRENT_TAB_CWD = 0,
-
-        // Use cwd passed in cli
-        CLI_CWD,
-
-        // Use user's home directory
-        HOME_CWD
-    };
-
-    /*
-     * Possible options for new tab cmd
-     */
-    enum NewTabCMD{
-        // Use default user shell
-        DEFAULT_CMD = 0,
-
-        // Use the command pass in cli for all tabs
-        CLI_CMD
-    };
-
-    /*
-     * Possible options for tab show
-     */
-    enum ShowTabPolicy{
-        // Always show tabs
-        ALWAYS = 0,
-
-        // Show tabs at navigation
-        SMART,
-
-        // Show tabs only if #tabs > 1
-        NEEDED,
-    };
-
     /*
      * VTerminal configuration
      * Steps to add new config option:
      *     1. Add class member with proper type.
      *     2. Add code to set the config option in configure_vterm()
-     *     3. Add code to apply the config option in apply_config()
+     *         -  Use the helper macros defined above.
+     *     3. Add code to apply the config option in apply_config_*()
      *     4. If option is specific to vte version > 52, add guards.
      */
     class VConfig{
         public:
-            static VConfig& initVConfig(gchar* cli_config_path = nullptr,
-                    gchar *cli_cwd = nullptr, gchar **cli_cmd = nullptr){
-                static VConfig vconfig (cli_config_path, cli_cwd, cli_cmd);
-                return vconfig;
-            }
 
-            static VConfig& getVConfig(){
-                return initVConfig();
-            }
+            /*
+             * Possible options for new tab cwd
+             */
+            enum NewTabCWD{
+                // Use cwd of the current tab.
+                CURRENT_TAB_CWD = 0,
 
-        public:
+                // Use cwd passed in cli
+                CLI_CWD,
+
+                // Use user's home directory
+                HOME_CWD
+            };
+
+            /*
+             * Possible options for new tab cmd
+             */
+            enum NewTabCMD{
+                // Use default user shell
+                DEFAULT_CMD = 0,
+
+                // Use the command pass in cli for all tabs
+                CLI_CMD
+            };
+
+            /*
+             * Possible options for tab show
+             */
+            enum ShowTabPolicy{
+                // Always show tabs
+                ALWAYS = 0,
+
+                // Show tabs at navigation
+                SMART,
+
+                // Show tabs only if #tabs > 1
+                NEEDED,
+            };
+
             /*
              * VTerm Configuration
              */
@@ -219,28 +209,29 @@ namespace VTERM{
                      insert_after_current = true,
                      show_scrollbar = true;
 
-        private:
-            VConfig(gchar* cli_config_path, gchar *cli_cwd, gchar **cli_cmd) :
-                cli_config_path(cli_config_path), cli_cwd(cli_cwd), cli_cmd(cli_cmd){
-                load_config_file();
+            /*
+             * Static config initializer
+             * Should be called once to setup the singleton VConfig
+             */
+            static VConfig& initVConfig(gchar* cli_config_path = nullptr,
+                    gchar *cli_cwd = nullptr, gchar **cli_cmd = nullptr){
+                static VConfig vconfig (cli_config_path, cli_cwd, cli_cmd);
+                return vconfig;
             }
 
-        public:
-            ~VConfig(){
-                if(cli_config_path)
-                    g_free(cli_config_path);
-                if(cli_cwd)
-                    g_free(cli_cwd);
-                if(cli_cmd)
-                    g_strfreev(cli_cmd);
-                if(word_char_exceptions)
-                    g_free(word_char_exceptions);
-                if(font)
-                    pango_font_description_free(font);
+            /*
+             * Returns the singleton VConfig instance
+             */
+            static VConfig& getVConfig(){
+                return initVConfig();
             }
 
         private:
             // Singleton
+            VConfig(gchar* cli_config_path, gchar *cli_cwd, gchar **cli_cmd) :
+                cli_config_path(cli_config_path), cli_cwd(cli_cwd), cli_cmd(cli_cmd){
+                load_config_file();
+            }
             VConfig(VConfig const&);
             void operator=(VConfig const&);
 
@@ -255,7 +246,8 @@ namespace VTERM{
                     gtk_window_set_role(window, window_role);
                 if(color_background_transparency > 0){
                     gtk_widget_set_app_paintable(GTK_WIDGET(window), true);
-                    color_background.alpha = double(100 - CLAMP(color_background_transparency, 0, 100)) / 100.0;
+                    color_background.alpha = double(100 - CLAMP(
+                                color_background_transparency, 0, 100)) / 100.0;
                 }
                 if(focus_out_color_background_transparency > 0){
                     gtk_widget_set_app_paintable(GTK_WIDGET(window), true);
@@ -437,10 +429,15 @@ namespace VTERM{
                 get_bool_or_def("behavior", "mouse_autohide", &mouse_autohide);
                 get_bool_or_def("behavior", "enable_bidi", &enable_bidi);
                 get_bool_or_def("behavior", "enable_shaping", &enable_shaping);
-
-                GET_STRING_AND_FREE(behavior, word_char_exceptions)
+                get_bool_or_def("behavior", "window_size_hints", &window_size_hints);
+                get_bool_or_def("behavior", "tab_label_trim_first", &tab_label_trim_first);
+                get_bool_or_def("behavior", "insert_after_current", &insert_after_current);
 
                 GET_NUMBER(behavior, scrollback_lines, int, integer)
+
+                GET_STRING_AND_FREE(behavior, word_char_exceptions)
+                GET_STRING_AND_FREE(behavior, window_title)
+                GET_STRING_AND_FREE(behavior, window_role)
 
                 PARSE_STRING(behavior, cursor_blink_mode,
                         "on", VTE_CURSOR_BLINK_ON,
@@ -470,11 +467,6 @@ namespace VTERM{
                         "current", DEFAULT_CMD,
                         "cli", CLI_CMD)
 
-                GET_STRING_AND_FREE(behavior, window_title)
-                GET_STRING_AND_FREE(behavior, window_role)
-
-                get_bool_or_def("behavior", "window_size_hints", &window_size_hints);
-
                 PARSE_STRING(behavior, tabs_position,
                         "top", GTK_POS_TOP,
                         "bottom", GTK_POS_BOTTOM)
@@ -484,9 +476,6 @@ namespace VTERM{
                         "smart", SMART,
                         "needed", NEEDED)
 
-                get_bool_or_def("behavior", "tab_label_trim_first", &tab_label_trim_first);
-                get_bool_or_def("behavior", "insert_after_current", &insert_after_current);
-
                 /*
                  * Section [style]
                  */
@@ -494,27 +483,15 @@ namespace VTERM{
                 get_bool_or_def("style", "show_scrollbar", &show_scrollbar);
 
                 GET_NUMBER(style, font_scale, double, double)
-
                 GET_NUMBER(style, cell_height_scale, double, double)
-
                 GET_NUMBER(style, cell_width_scale, double, double)
-
                 GET_NUMBER(style, color_background_transparency, double, double)
-
                 GET_NUMBER(style, focus_out_color_background_transparency, double, double)
 
-                gchar* temp_font_desc = g_key_file_get_string(config, "style", "font", &gerror);
-                if(!is_gerror("font")){
-                    PangoFontDescription *temp_font = pango_font_description_from_string(temp_font_desc);
-                    if(temp_font){
-                        if(font)
-                            pango_font_description_free(font);
-                        font = temp_font;
-                    }else{
-                        g_printerr("Error loading font \"%s\"\n", temp_font_desc);
-                    }
-                    g_free(temp_font_desc);
-                }
+                PARSE_STRING(style, cursor_shape,
+                        "block", VTE_CURSOR_SHAPE_BLOCK,
+                        "ibeam", VTE_CURSOR_SHAPE_IBEAM,
+                        "underline", VTE_CURSOR_SHAPE_UNDERLINE)
 
                 get_color_or_def("color_bold", &color_bold);
                 get_color_or_def("color_foreground", &color_foreground);
@@ -531,11 +508,18 @@ namespace VTERM{
                     get_color_or_def(color_key, &palette[i]);
                 }
 
-                PARSE_STRING(style, cursor_shape,
-                        "block", VTE_CURSOR_SHAPE_BLOCK,
-                        "ibeam", VTE_CURSOR_SHAPE_IBEAM,
-                        "underline", VTE_CURSOR_SHAPE_UNDERLINE)
-
+                gchar* temp_font_desc = g_key_file_get_string(config, "style", "font", &gerror);
+                if(!is_gerror("font")){
+                    PangoFontDescription *temp_font = pango_font_description_from_string(temp_font_desc);
+                    if(temp_font){
+                        if(font)
+                            pango_font_description_free(font);
+                        font = temp_font;
+                    }else{
+                        g_printerr("Error loading font \"%s\"\n", temp_font_desc);
+                    }
+                    g_free(temp_font_desc);
+                }
             }
 
             /*
