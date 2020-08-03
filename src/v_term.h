@@ -54,26 +54,28 @@ namespace VTERM{
             /*
              * Events callback functions
              */
-            static gboolean window_focus_changed_cb(GtkWindow* _window, GdkEvent *event, gpointer _data);
+
+            static void window_realize_cb(GtkWindow* _window, gpointer data);
+            static gboolean window_focus_changed_cb(GtkWindow* _window, GdkEvent *event, gpointer data);
             static void window_screen_changed_cb(GtkWindow* window, GdkScreen* _prev_screen, gpointer _data);
             static gboolean window_key_press_cb(GtkWindow* window, GdkEventKey* event, gpointer data);
             static gboolean window_key_release_cb(GtkWindow* window, GdkEventKey* event, gpointer data);
             static void notebook_switch_page_cb(GtkNotebook* _notebook, GtkBox* hbox,
-                    guint _page_nu, gpointer _data);
-
-            /*
-             * Updates the window's geometry hints to the WM
-             */
-            static void window_update_geometry(VTab* vtab);
-
-            /*
-             * Sets the window size to match current tab & geometry hint
-             */
-            static void window_set_size();
+                    guint _page_nu, gpointer data);
 
             /*
              * Non-static methods
              */
+
+            /*
+             * Updates the window's geometry hints to the WM
+             */
+            void window_update_geometry(VTab* vtab);
+
+            /*
+             * Sets the window size to match current tab & geometry hint
+             */
+            void window_set_size();
 
             /*
              * Inserts new tab to notebook
@@ -134,8 +136,5 @@ namespace VTERM{
             VTerm();
             ~VTerm();
     };
-
-    // Global vterm
-    extern unique_ptr<VTerm> vterm;
 }
 #endif

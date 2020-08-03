@@ -13,7 +13,8 @@ using namespace std;
 namespace VTERM{
 
     void VTab::terminal_child_exit_cb(VteTerminal* _vte_terminal, gint _status, gpointer data){
-        vterm->deleteVTab(((VTab*)data));
+        VTab* vtab = (VTab*)data;
+        vtab->vterm->deleteVTab(vtab);
     }
 
     void VTab::terminal_create_cb(VteTerminal* _vte_terminal, GPid pid, GError *error, gpointer data){
@@ -22,12 +23,13 @@ namespace VTERM{
             // Report the error..
             g_printerr("Could not create a new tab: %s\n", error->message);
 
+            VTab* vtab = (VTab*)data;
             // If the only tab, exit with error
-            if(gtk_notebook_get_n_pages(vterm->notebook) == 1)
+            if(gtk_notebook_get_n_pages(vtab->vterm->notebook) == 1)
                 exit_error();
 
             // Delete the vtab
-            vterm->deleteVTab((VTab*)data);
+            vtab->vterm->deleteVTab((VTab*)data);
 
             return;
         }
@@ -37,13 +39,14 @@ namespace VTERM{
         VTab* vtab = (VTab*)data;
         const gchar* title = vte_terminal_get_window_title(vte_terminal);
         vtab->sync_tab_label(title);
-        vterm->sync_window_title(title);
+        vtab->vterm->sync_window_title(title);
     }
 
     gboolean VTab::terminal_key_press_cb(VteTerminal* vte_terminal, GdkEventKey* event, gpointer data){
         const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
         const guint keypressed = gdk_keyval_to_lower(event->keyval);
         VTab* vtab = (VTab*)data;
+        VTerm* vterm = vtab->vterm;
 
         /*
          * This will get really complicated.. so:
@@ -140,7 +143,7 @@ namespace VTERM{
                 case GDK_KEY_plus:{
                     vte_terminal_set_font_scale(vte_terminal,
                             vte_terminal_get_font_scale(vte_terminal) * 1.2);
-                    VTerm::window_set_size();
+                    vterm->window_set_size();
                     return true;
                 }
             }
@@ -157,7 +160,7 @@ namespace VTERM{
                 case GDK_KEY_KP_Add:{
                     vte_terminal_set_font_scale(vte_terminal,
                             vte_terminal_get_font_scale(vte_terminal) * 1.2);
-                    VTerm::window_set_size();
+                    vterm->window_set_size();
                     return true;
                 }
 
@@ -168,7 +171,7 @@ namespace VTERM{
                 case GDK_KEY_KP_Subtract:{
                     vte_terminal_set_font_scale(vte_terminal,
                             vte_terminal_get_font_scale(vte_terminal) / 1.2);
-                    VTerm::window_set_size();
+                    vterm->window_set_size();
                     return true;
                 }
 
@@ -177,7 +180,7 @@ namespace VTERM{
                  */
                 case GDK_KEY_equal:{
                     vte_terminal_set_font_scale(vte_terminal, VConf(font_scale));
-                    VTerm::window_set_size();
+                    vterm->window_set_size();
                     return true;
                 }
             }
@@ -239,7 +242,7 @@ namespace VTERM{
         return false;
     }
 
-    VTab* VTab::create_tab(gboolean is_first_tab){
+    VTab* VTab::create_tab(VTerm* vterm, gboolean is_first_tab){
         gchar *cwd = VConf(cli_cwd), **cmd = VConf(cli_cmd), **env = nullptr;
 
 #ifdef GDK_WINDOWING_X11
@@ -279,7 +282,7 @@ namespace VTERM{
 
                 if(cwd_uri){
                     cwd = g_filename_from_uri(cwd_uri, nullptr, nullptr);
-                    VTab* new_tab =  new VTab(cwd, cmd, env);
+                    VTab* new_tab =  new VTab(vterm, cwd, cmd, env);
                     g_free(cwd);
                     return new_tab;
                 }else{
@@ -294,7 +297,7 @@ namespace VTERM{
             // The case of CLI_CWD is handled by initialization
         }
 
-        return new VTab(cwd, cmd, env);
+        return new VTab(vterm, cwd, cmd, env);
     }
 
     void VTab::connect_signals(){
@@ -376,7 +379,7 @@ namespace VTERM{
         gtk_label_set_width_chars(tab_label, 15);
     }
 
-    VTab::VTab(gchar* cwd, gchar** cmd, gchar** env){
+    VTab::VTab(VTerm* vterm, gchar* cwd, gchar** cmd, gchar** env): vterm(vterm){
         // Create terminal
         vte_terminal = VTE_TERMINAL(vte_terminal_new());
         create_tab_label();

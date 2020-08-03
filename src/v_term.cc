@@ -8,10 +8,13 @@
 
 using namespace std;
 namespace VTERM{
-    unique_ptr<VTerm> vterm;
+    void VTerm::window_realize_cb(GtkWindow* _window, gpointer data){
+        ((VTerm*)data)->window_set_size();
+    }
 
-    gboolean VTerm::window_focus_changed_cb(GtkWindow* _window, GdkEvent *event, gpointer _data){
+    gboolean VTerm::window_focus_changed_cb(GtkWindow* _window, GdkEvent *event, gpointer data){
         // Update the background/transparency with focus in/out
+        VTerm* vterm = (VTerm*)data;
         GdkEventFocus* fe = (GdkEventFocus*)event;
         if(VTab* current_tab = vterm->getCurrentVTab()){
             VteTerminal* current_vte_terminal = VTE_TERMINAL(current_tab->vte_terminal);
@@ -31,7 +34,8 @@ namespace VTERM{
             gtk_widget_set_visual(GTK_WIDGET(window), visual);
     }
 
-    gboolean VTerm::window_key_press_cb(GtkWindow* _window, GdkEventKey* event, gpointer _data){
+    gboolean VTerm::window_key_press_cb(GtkWindow* _window, GdkEventKey* event, gpointer data){
+        VTerm* vterm = (VTerm*)data;
         const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
         const guint keypressed = gdk_keyval_to_lower(event->keyval);
 
@@ -43,7 +47,7 @@ namespace VTERM{
            (keypressed == GDK_KEY_Shift_R && modifiers == GDK_CONTROL_MASK))){
 
             gtk_notebook_set_show_tabs(vterm->notebook, true);
-            window_set_size();
+            vterm->window_set_size();
             return false;
         }
 
@@ -54,7 +58,7 @@ namespace VTERM{
                  * Opens a new tab
                  */
                 case VKEY_NEW_TAB:{
-                    VTab::create_tab(false);
+                    VTab::create_tab(vterm, false);
                     return true;
                 }
 
@@ -140,7 +144,8 @@ namespace VTERM{
         return false;
     }
 
-    gboolean VTerm::window_key_release_cb(GtkWindow* _window, GdkEventKey* event, gpointer _data){
+    gboolean VTerm::window_key_release_cb(GtkWindow* _window, GdkEventKey* event, gpointer data){
+        VTerm* vterm = (VTerm*)data;
         const guint keyreleased = gdk_keyval_to_lower(event->keyval);
 
         // We are doing smart policy
@@ -154,14 +159,15 @@ namespace VTERM{
             )){
 
             gtk_notebook_set_show_tabs(vterm->notebook, false);
-            window_set_size();
+            vterm->window_set_size();
         }
 
         return false;
     }
 
     void VTerm::notebook_switch_page_cb(GtkNotebook* _notebook, GtkBox* hbox,
-            guint _page_nu, gpointer _data){
+            guint _page_nu, gpointer data){
+        VTerm* vterm = (VTerm*)data;
         VTab* vtab = vterm->getVTab(hbox);
 
         // Sync the window title
@@ -189,7 +195,7 @@ namespace VTERM{
 
         // Update the geometry hints; new tab could have different font and we
         // might have added/deleted the tabs bar
-        window_set_size();
+        vterm->window_set_size();
 
         // Give focus to terminal widget
         gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
@@ -206,8 +212,6 @@ namespace VTERM{
          * cant really do anything about it.
          */
         VteTerminal* vte_terminal = VTE_TERMINAL(vtab->vte_terminal);
-        GtkWidget* notebook = GTK_WIDGET(vterm->notebook);
-        GtkWidget* window = GTK_WIDGET(vterm->window);
 
         // So, first.. get the char width & height
         gint cell_width = vte_terminal_get_char_width(vte_terminal);
@@ -221,7 +225,7 @@ namespace VTERM{
 
         // Now size of chrome
         GtkRequisition notebook_request;
-        gtk_widget_get_preferred_size(notebook, NULL, &notebook_request);
+        gtk_widget_get_preferred_size(GTK_WIDGET(notebook), NULL, &notebook_request);
         gint chrome_width = notebook_request.width - (cell_width * col_count);
         gint chrome_height = notebook_request.height - (cell_height * row_count);
         DEBUG_PRINT("WINDOW_SIZE: chrome_width: %d, chrome_height: %d\n", chrome_width, chrome_height);
@@ -229,11 +233,11 @@ namespace VTERM{
         gint csd_width = 0;
         gint csd_height = 0;
 
-        if(gtk_widget_get_realized(window) && VConf(window_size_hints)){
+        if(gtk_widget_get_realized(GTK_WIDGET(window)) && VConf(window_size_hints)){
             // Now size of csd
             GtkAllocation toplevel, contents;
-            gtk_widget_get_allocation(window, &toplevel);
-            gtk_widget_get_allocation(notebook, &contents);
+            gtk_widget_get_allocation(GTK_WIDGET(window), &toplevel);
+            gtk_widget_get_allocation(GTK_WIDGET(notebook), &contents);
             csd_width = toplevel.width - contents.width;
             csd_height = toplevel.height - contents.height;
             DEBUG_PRINT("WINDOW_SIZE: csd_width: %d, csd_height: %d\n", csd_width, csd_height);
@@ -246,7 +250,7 @@ namespace VTERM{
             geometry.height_inc = cell_height;
             geometry.min_width = geometry.base_width + cell_width * 5;
             geometry.min_height = geometry.base_height + cell_height * 2;
-            gtk_window_set_geometry_hints(vterm->window,
+            gtk_window_set_geometry_hints(window,
                                           nullptr,
                                           &geometry,
                                           GdkWindowHints(GDK_HINT_RESIZE_INC |
@@ -255,14 +259,14 @@ namespace VTERM{
         }
 
         // Finally, update our records
-        vterm->window_width_cache = chrome_width + cell_width * col_count;
-        vterm->window_height_cache = chrome_height + cell_height * row_count;
+        window_width_cache = chrome_width + cell_width * col_count;
+        window_height_cache = chrome_height + cell_height * row_count;
         DEBUG_PRINT("WINDOW_SIZE: window_width_cache: %d, window_height_cache: %d\n",
-                    vterm->window_width_cache, vterm->window_height_cache);
+                    window_width_cache, window_height_cache);
     }
 
     void VTerm::window_set_size(){
-        VTab* vtab = vterm->getCurrentVTab();
+        VTab* vtab = getCurrentVTab();
 
         // If we dont have any tab, no need to set the window size
         if(!vtab)
@@ -272,17 +276,17 @@ namespace VTERM{
         window_update_geometry(vtab);
 
         // Not doing this to maximized or tiled windows
-        GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(vterm->window));
+        GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
         if (gdk_window != NULL && (gdk_window_get_state(gdk_window) &
             (GDK_WINDOW_STATE_MAXIMIZED | GDK_WINDOW_STATE_TILED | GDK_WINDOW_STATE_FULLSCREEN)))
             return;
 
         // If we have been realized.. resize.
-        if(vterm->window_width_cache > 0 && vterm->window_height_cache > 0){
+        if(window_width_cache > 0 && window_height_cache > 0){
             DEBUG_PRINT("WINDOW_SIZE: Resizing window: (%d X %d)\n",
-                        vterm->window_width_cache, vterm->window_height_cache);
-            gtk_window_resize(GTK_WINDOW(vterm->window),
-                              vterm->window_width_cache, vterm->window_height_cache);
+                        window_width_cache, window_height_cache);
+            gtk_window_resize(GTK_WINDOW(window),
+                              window_width_cache, window_height_cache);
         }
     }
 
@@ -341,30 +345,30 @@ namespace VTERM{
     }
 
     void VTerm::connect_signals(){
-        g_signal_connect(window, "key-press-event", G_CALLBACK(window_key_press_cb), nullptr);
-        g_signal_connect(window, "destroy", exit_success, nullptr);
-        g_signal_connect(window, "realize", G_CALLBACK(window_set_size), nullptr);
-        g_signal_connect(notebook, "switch-page", G_CALLBACK(notebook_switch_page_cb), nullptr);
+        g_signal_connect(window, "key-press-event", G_CALLBACK(window_key_press_cb), this);
+        g_signal_connect(window, "destroy", exit_success, this);
+        g_signal_connect(window, "realize", G_CALLBACK(window_realize_cb), this);
+        g_signal_connect(notebook, "switch-page", G_CALLBACK(notebook_switch_page_cb), this);
 
         if(VConf(focus_aware_color_background)){
-            g_signal_connect(window, "focus-in-event", G_CALLBACK(window_focus_changed_cb), nullptr);
-            g_signal_connect(window, "focus-out-event", G_CALLBACK(window_focus_changed_cb), nullptr);
+            g_signal_connect(window, "focus-in-event", G_CALLBACK(window_focus_changed_cb), this);
+            g_signal_connect(window, "focus-out-event", G_CALLBACK(window_focus_changed_cb), this);
         }
 
         if(VConfig::getVConfig().is_transparency()){
             g_signal_connect(window, "screen-changed",
-                    G_CALLBACK(window_screen_changed_cb), nullptr);
+                    G_CALLBACK(window_screen_changed_cb), this);
         }
 
         if(VConf(show_tab_policy) == VConfig::ShowTabPolicy::SMART){
-            g_signal_connect(window, "key-release-event", G_CALLBACK(window_key_release_cb), nullptr);
+            g_signal_connect(window, "key-release-event", G_CALLBACK(window_key_release_cb), this);
         }
     }
 
     void VTerm::run(){
         gtk_widget_show_all(GTK_WIDGET(window));
 
-        VTab::create_tab(true);
+        VTab::create_tab(this, true);
 
         // fire!
         gtk_main();
@@ -454,8 +458,7 @@ gint main(gint argc, gchar **argv) {
     VTERM::VConfig::initVConfig(cli_config_path, cli_cwd, cli_cmd);
 
     // create global VTerm & run
-    VTERM::vterm.reset(new VTERM::VTerm());
-    VTERM::vterm->run();
+    (new VTERM::VTerm())->run();
 
     // If we reach here, something is wrong
     VTERM::exit_error();

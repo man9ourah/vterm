@@ -7,9 +7,16 @@
 
 using namespace std;
 namespace VTERM{
+    class VTerm;
 
     class VTab{
         public:
+
+            /*
+             * Parent VTerm object
+             */
+            VTerm* vterm;
+
             /*
              * HBox: parent of all!
              */
@@ -63,7 +70,7 @@ namespace VTERM{
             /*
              * Static VTab instance builder to decide cmd & cwd
              */
-            static VTab* create_tab(gboolean is_first_tab);
+            static VTab* create_tab(VTerm* vterm, gboolean is_first_tab);
 
             /*
              * Non-static methods
@@ -94,7 +101,7 @@ namespace VTERM{
             /*
              * Prevent making instances directly
              */
-            VTab(gchar* cwd, gchar** cmd, gchar** env);
+            VTab(VTerm* vterm, gchar* cwd, gchar** cmd, gchar** env);
             VTab(VTab const&);
             void operator=(VTab const&);
 
