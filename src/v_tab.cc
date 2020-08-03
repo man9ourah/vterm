@@ -12,16 +12,18 @@ using namespace std;
 
 namespace VTERM{
 
+    void VTab::terminal_child_exit_cb(VteTerminal* _vte_terminal, gint _status, gpointer data){
+        vterm->deleteVTab(((VTab*)data));
+    }
+
     void VTab::terminal_create_cb(VteTerminal* _vte_terminal, GPid pid, GError *error, gpointer data){
         if(pid < 0){
             // Opps!
             // Report the error..
             g_printerr("Could not create a new tab: %s\n", error->message);
 
-            GtkNotebook* notebook = GTK_NOTEBOOK(vterm->notebook);
-
             // If the only tab, exit with error
-            if(gtk_notebook_get_n_pages(notebook) == 1)
+            if(gtk_notebook_get_n_pages(vterm->notebook) == 1)
                 exit_error();
 
             // Delete the vtab
@@ -31,18 +33,14 @@ namespace VTERM{
         }
     }
 
-    void VTab::terminal_child_exit_cb(VteTerminal* _vte_terminal, gint _status, gpointer data){
-        vterm->deleteVTab(((VTab*)data));
-    }
-
     void VTab::terminal_title_changed_cb(VteTerminal* vte_terminal, gpointer data){
         VTab* vtab = (VTab*)data;
-        const gchar* title = vte_terminal_get_window_title(VTE_TERMINAL(vte_terminal));
+        const gchar* title = vte_terminal_get_window_title(vte_terminal);
         vtab->sync_tab_label(title);
         vterm->sync_window_title(title);
     }
 
-    gboolean VTab::terminal_key_press_cb(GtkWidget* vte_terminal, GdkEventKey* event, gpointer data){
+    gboolean VTab::terminal_key_press_cb(VteTerminal* vte_terminal, GdkEventKey* event, gpointer data){
         const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
         const guint keypressed = gdk_keyval_to_lower(event->keyval);
         VTab* vtab = (VTab*)data;
@@ -85,7 +83,7 @@ namespace VTERM{
                  * Prompt scroll up
                  */
                 case VKEY_UP_PROMPT:{
-                    vte_terminal_prompt_prev(VTE_TERMINAL(vte_terminal));
+                    vte_terminal_prompt_prev(vte_terminal);
                     return true;
                 }
 
@@ -93,7 +91,7 @@ namespace VTERM{
                  * Prompt scroll down
                  */
                 case VKEY_DOWN_PROMPT:{
-                    vte_terminal_prompt_next(VTE_TERMINAL(vte_terminal));
+                    vte_terminal_prompt_next(vte_terminal);
                     return true;
                 }
 
@@ -104,8 +102,8 @@ namespace VTERM{
                 case GDK_KEY_Page_Down:
                 case VKEY_MOVE_TAB_RIGHT:{
                     gint max_pn = gtk_notebook_get_n_pages(vterm->notebook);
-                    gtk_notebook_reorder_child(vterm->notebook, vtab->hbox,
-                            (gtk_notebook_page_num(vterm->notebook, vtab->hbox) + 1) % max_pn);
+                    gtk_notebook_reorder_child(vterm->notebook, GTK_WIDGET(vtab->hbox),
+                            (gtk_notebook_page_num(vterm->notebook, GTK_WIDGET(vtab->hbox)) + 1) % max_pn);
                     return true;
                 }
 
@@ -115,8 +113,8 @@ namespace VTERM{
                  */
                 case GDK_KEY_Page_Up:
                 case VKEY_MOVE_TAB_LEFT:{
-                    gtk_notebook_reorder_child(vterm->notebook, vtab->hbox,
-                            gtk_notebook_page_num(vterm->notebook, vtab->hbox) - 1);
+                    gtk_notebook_reorder_child(vterm->notebook, GTK_WIDGET(vtab->hbox),
+                            gtk_notebook_page_num(vterm->notebook, GTK_WIDGET(vtab->hbox)) - 1);
                     return true;
                 }
 
@@ -124,7 +122,7 @@ namespace VTERM{
                  * Copy
                  */
                 case VKEY_COPY:{
-                    vte_terminal_copy_clipboard_format(VTE_TERMINAL(vte_terminal), VTE_FORMAT_TEXT);
+                    vte_terminal_copy_clipboard_format(vte_terminal, VTE_FORMAT_TEXT);
                     return true;
                 }
 
@@ -132,7 +130,7 @@ namespace VTERM{
                  * Paste
                  */
                 case VKEY_PASTE:{
-                    vte_terminal_paste_clipboard(VTE_TERMINAL(vte_terminal));
+                    vte_terminal_paste_clipboard(vte_terminal);
                     return true;
                 }
 
@@ -140,8 +138,8 @@ namespace VTERM{
                  * Standard zoom in keybinding
                  */
                 case GDK_KEY_plus:{
-                    vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal),
-                            vte_terminal_get_font_scale(VTE_TERMINAL(vte_terminal)) * 1.2);
+                    vte_terminal_set_font_scale(vte_terminal,
+                            vte_terminal_get_font_scale(vte_terminal) * 1.2);
                     VTerm::window_set_size();
                     return true;
                 }
@@ -157,8 +155,8 @@ namespace VTERM{
                  * Standard zoom in keybinding
                  */
                 case GDK_KEY_KP_Add:{
-                    vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal),
-                            vte_terminal_get_font_scale(VTE_TERMINAL(vte_terminal)) * 1.2);
+                    vte_terminal_set_font_scale(vte_terminal,
+                            vte_terminal_get_font_scale(vte_terminal) * 1.2);
                     VTerm::window_set_size();
                     return true;
                 }
@@ -168,8 +166,8 @@ namespace VTERM{
                  */
                 case GDK_KEY_minus:
                 case GDK_KEY_KP_Subtract:{
-                    vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal),
-                            vte_terminal_get_font_scale(VTE_TERMINAL(vte_terminal)) / 1.2);
+                    vte_terminal_set_font_scale(vte_terminal,
+                            vte_terminal_get_font_scale(vte_terminal) / 1.2);
                     VTerm::window_set_size();
                     return true;
                 }
@@ -178,7 +176,7 @@ namespace VTERM{
                  * Standard? reset font scale
                  */
                 case GDK_KEY_equal:{
-                    vte_terminal_set_font_scale(VTE_TERMINAL(vte_terminal), VConf(font_scale));
+                    vte_terminal_set_font_scale(vte_terminal, VConf(font_scale));
                     VTerm::window_set_size();
                     return true;
                 }
@@ -246,8 +244,8 @@ namespace VTERM{
 
 #ifdef GDK_WINDOWING_X11
         env = g_get_environ();
-        if (GDK_IS_X11_SCREEN(gtk_widget_get_screen(vterm->window))) {
-            GdkWindow *gdk_window = gtk_widget_get_window(vterm->window);
+        if (GDK_IS_X11_SCREEN(gtk_widget_get_screen(GTK_WIDGET(vterm->window)))) {
+            GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(vterm->window));
             if (gdk_window) {
                 char xid_s[std::numeric_limits<long unsigned>::digits10 + 1];
                 snprintf(xid_s, sizeof(xid_s), "%lu", GDK_WINDOW_XID(gdk_window));
@@ -268,17 +266,16 @@ namespace VTERM{
         }else{
             // For other tabs, consult config
 
-            if(VConf(tab_cmd) == DEFAULT_CMD)
+            if(VConf(tab_cmd) == VConfig::NewTabCMD::DEFAULT_CMD)
                 // use default shell, note that it is initialized to cli_cmd
                 // so CLI_CMD is covered.
                 cmd = vterm->user_def_shell;
 
-            if(VConf(tab_cwd) == CURRENT_TAB_CWD){
+            if(VConf(tab_cwd) == VConfig::NewTabCWD::CURRENT_TAB_CWD){
                 // We need to get the current tab cwd
                 // Utilize vte OSC 7
                 VTab* current_vtab = vterm->getCurrentVTab();
-                VteTerminal* vte_terminal = VTE_TERMINAL(current_vtab->vte_terminal);
-                const gchar* cwd_uri = vte_terminal_get_current_directory_uri(vte_terminal);
+                const gchar* cwd_uri = vte_terminal_get_current_directory_uri(current_vtab->vte_terminal);
 
                 if(cwd_uri){
                     cwd = g_filename_from_uri(cwd_uri, nullptr, nullptr);
@@ -291,7 +288,7 @@ namespace VTERM{
                     g_printerr("Could not retrieve cwd of current tab.. make sure vte.sh is sourced.\n");
                     cwd = nullptr;
                 }
-            }else if(VConf(tab_cwd) == HOME_CWD){
+            }else if(VConf(tab_cwd) == VConfig::NewTabCWD::HOME_CWD){
                 cwd = vterm->user_home;
             }
             // The case of CLI_CWD is handled by initialization
@@ -323,7 +320,7 @@ namespace VTERM{
                     case ModeInfo::ModeOp::INSERT_MODE:{
                         DEBUG_PRINT("\nNORMAL->INSERT\n");
                         current_mode.mode = ModeInfo::ModeOp::INSERT_MODE;
-                        vte_terminal_set_input_enabled(VTE_TERMINAL(vte_terminal), true);
+                        vte_terminal_set_input_enabled(vte_terminal, true);
                         return;
                     }
                 }
@@ -342,7 +339,7 @@ namespace VTERM{
                     case ModeInfo::ModeOp::NORMAL_MODE:{
                         DEBUG_PRINT("\nINSERT->NORMAL\n");
                         current_mode.mode = ModeInfo::ModeOp::NORMAL_MODE;
-                        vte_terminal_set_input_enabled(VTE_TERMINAL(vte_terminal), false);
+                        vte_terminal_set_input_enabled(vte_terminal, false);
                         return;
                     }
 
@@ -361,24 +358,42 @@ namespace VTERM{
         }
     }
 
+    void VTab::create_tab_label(){
+        tab_label = GTK_LABEL(gtk_label_new("VTerminal"));
+
+        gtk_widget_set_halign(GTK_WIDGET(tab_label), GTK_ALIGN_CENTER);
+        gtk_widget_set_valign (GTK_WIDGET(tab_label), GTK_ALIGN_BASELINE);
+        gtk_widget_set_margin_start(GTK_WIDGET(tab_label), 0);
+        gtk_widget_set_margin_end(GTK_WIDGET(tab_label), 0);
+        gtk_widget_set_margin_top(GTK_WIDGET(tab_label), 0);
+        gtk_widget_set_margin_bottom(GTK_WIDGET(tab_label), 0);
+
+        gtk_label_set_single_line_mode (tab_label, true);
+        gtk_label_set_ellipsize(tab_label, VConf(tab_label_trim_first) ?
+                                        PANGO_ELLIPSIZE_START :
+                                        PANGO_ELLIPSIZE_END);
+
+        gtk_label_set_width_chars(tab_label, 15);
+    }
+
     VTab::VTab(gchar* cwd, gchar** cmd, gchar** env){
         // Create terminal
-        vte_terminal = vte_terminal_new();
-        tab_label = create_tab_label();
+        vte_terminal = VTE_TERMINAL(vte_terminal_new());
+        create_tab_label();
 
         // Box it
-        hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        gtk_box_pack_start(GTK_BOX(hbox), vte_terminal, true, true, 0);
+        hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+        gtk_box_pack_start(hbox, GTK_WIDGET(vte_terminal), true, true, 0);
 
         // Scrollbar
         if(VConf(show_scrollbar)){
-            scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL,
-                    gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(vte_terminal)));
-            gtk_box_pack_start(GTK_BOX(hbox), scrollbar, false, false, 0);
+            scrollbar = GTK_SCROLLBAR(gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL,
+                    gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(vte_terminal))));
+            gtk_box_pack_start(hbox, GTK_WIDGET(scrollbar), false, false, 0);
         }
 
         // Apply the config on vte terminal
-        VConfig::getVConfig().apply_vte_config(VTE_TERMINAL(vte_terminal));
+        VConfig::getVConfig().apply_vte_config(vte_terminal);
 
         // Connect the signals
         connect_signals();
@@ -388,7 +403,7 @@ namespace VTERM{
 
         // Finally, spawn the child
         GSpawnFlags spawn_flags = G_SPAWN_SEARCH_PATH_FROM_ENVP;
-        vte_terminal_spawn_async(VTE_TERMINAL(vte_terminal), VTE_PTY_DEFAULT, cwd, cmd, env,
+        vte_terminal_spawn_async(vte_terminal, VTE_PTY_DEFAULT, cwd, cmd, env,
                 spawn_flags, NULL, NULL, NULL, -1, NULL, terminal_create_cb, this);
     }
 

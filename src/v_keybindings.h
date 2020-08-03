@@ -71,13 +71,13 @@
  * Up prompt
  * (WITH_MODIFIER)
  */
-#define VKEY_UP_PROMPT GDK_KEY_i
+#define VKEY_UP_PROMPT GDK_KEY_o
 
 /*
  * Down prompt
  * (WITH_MODIFIER)
  */
-#define VKEY_DOWN_PROMPT GDK_KEY_o
+#define VKEY_DOWN_PROMPT GDK_KEY_i
 
 /*
  * Move tab to right

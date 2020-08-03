@@ -14,7 +14,7 @@ namespace VTERM{
             /*
              * Main Gtk window
              */
-            GtkWidget* window;
+            GtkWindow* window;
 
             /* 
              * Gtk notebook aka tab bar
@@ -30,7 +30,7 @@ namespace VTERM{
             /*
              * Notebook pages to vtab objects map
              */
-            map<GtkWidget*, VTab*> hboxVTabMap;
+            map<GtkBox*, VTab*> hboxVTabMap;
 
             /*
              * up-to-date window size info
@@ -54,12 +54,12 @@ namespace VTERM{
             /*
              * Events callback functions
              */
-            static gboolean window_focus_changed_cb(GtkWidget* _window, GdkEvent *event, gpointer _data);
-            static void window_screen_changed_cb(GtkWidget* window, GdkScreen* _prev_screen, gpointer _data);
-            static void notebook_switch_page_cb(GtkNotebook* _notebook, GtkWidget* hbox,
+            static gboolean window_focus_changed_cb(GtkWindow* _window, GdkEvent *event, gpointer _data);
+            static void window_screen_changed_cb(GtkWindow* window, GdkScreen* _prev_screen, gpointer _data);
+            static gboolean window_key_press_cb(GtkWindow* window, GdkEventKey* event, gpointer data);
+            static gboolean window_key_release_cb(GtkWindow* window, GdkEventKey* event, gpointer data);
+            static void notebook_switch_page_cb(GtkNotebook* _notebook, GtkBox* hbox,
                     guint _page_nu, gpointer _data);
-            static gboolean window_key_press_cb(GtkWidget* window, GdkEventKey* event, gpointer data);
-            static gboolean window_key_release_cb(GtkWidget* window, GdkEventKey* event, gpointer data);
 
             /*
              * Updates the window's geometry hints to the WM
@@ -98,7 +98,7 @@ namespace VTERM{
             /*
              * Getter:: Get VTab given parent hbox
              */
-            VTab* getVTab(GtkWidget* hbox){
+            VTab* getVTab(GtkBox* hbox){
                 // This throws an exception if not found... good.
                 return hboxVTabMap.at(hbox);
             }
@@ -107,7 +107,7 @@ namespace VTERM{
              * Getter:: Get VTab at page pn
              */
             VTab* getVTab(gint pn){
-                GtkWidget* hbox = gtk_notebook_get_nth_page(notebook, pn);
+                GtkBox* hbox = GTK_BOX(gtk_notebook_get_nth_page(notebook, pn));
                 if(hbox)
                     return getVTab(hbox);
                 return nullptr;
@@ -125,7 +125,7 @@ namespace VTERM{
              */
             void sync_window_title(const gchar* title){
                 if(!VConf(window_title))
-                    gtk_window_set_title(GTK_WINDOW(window), title);
+                    gtk_window_set_title(window, title);
             }
 
             /*

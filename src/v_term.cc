@@ -10,7 +10,7 @@ using namespace std;
 namespace VTERM{
     unique_ptr<VTerm> vterm;
 
-    gboolean VTerm::window_focus_changed_cb(GtkWidget* _window, GdkEvent *event, gpointer _data){
+    gboolean VTerm::window_focus_changed_cb(GtkWindow* _window, GdkEvent *event, gpointer _data){
         // Update the background/transparency with focus in/out
         GdkEventFocus* fe = (GdkEventFocus*)event;
         if(VTab* current_tab = vterm->getCurrentVTab()){
@@ -23,7 +23,7 @@ namespace VTERM{
         return false;
     }
 
-    void VTerm::window_screen_changed_cb(GtkWidget* window, GdkScreen* _prev_screen, gpointer _data){
+    void VTerm::window_screen_changed_cb(GtkWindow* window, GdkScreen* _prev_screen, gpointer _data){
         // Update the visual of window's screen
         GdkScreen* screen = gtk_widget_get_screen(GTK_WIDGET(window));
         GdkVisual* visual = gdk_screen_get_rgba_visual(screen);
@@ -31,42 +31,7 @@ namespace VTERM{
             gtk_widget_set_visual(GTK_WIDGET(window), visual);
     }
 
-    void VTerm::notebook_switch_page_cb(GtkNotebook* _notebook, GtkWidget* hbox,
-            guint _page_nu, gpointer _data){
-        VTab* vtab = vterm->getVTab(hbox);
-
-        // Sync the window title
-        const gchar* title = gtk_label_get_text(GTK_LABEL(vtab->tab_label));
-        vterm->sync_window_title(title);
-
-        // Sets the show tab policy for NEEDED
-        if(VConf(show_tab_policy) == VConfig::ShowTabPolicy::NEEDED){
-            gtk_notebook_set_show_tabs(vterm->notebook,
-                                       (gtk_notebook_get_n_pages(vterm->notebook) == 1)?
-                                        false : true);
-        }
-
-        // Hide not showing tabs to make them not affect the terminal window
-        // size.. similar to gnome-terminal behavior
-        if(vterm->current_tab)
-            gtk_widget_hide(vterm->current_tab->vte_terminal);
-
-        // Flag all to be shown
-        gtk_widget_show_all(vtab->hbox);
-
-        // Update our records
-        vterm->alternate_tab = vterm->current_tab;
-        vterm->current_tab = vtab;
-
-        // Update the geometry hints; new tab could have different font and we
-        // might have added/deleted the tabs bar
-        window_set_size();
-
-        // Give focus to terminal widget
-        gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
-    }
-
-    gboolean VTerm::window_key_press_cb(GtkWidget* _window, GdkEventKey* event, gpointer _data){
+    gboolean VTerm::window_key_press_cb(GtkWindow* _window, GdkEventKey* event, gpointer _data){
         const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
         const guint keypressed = gdk_keyval_to_lower(event->keyval);
 
@@ -117,7 +82,7 @@ namespace VTERM{
                  */
                 case VKEY_ALTERNATE_TAB:{
                     gint alternate_pn = gtk_notebook_page_num(vterm->notebook,
-                                                              vterm->alternate_tab->hbox);
+                                                              GTK_WIDGET(vterm->alternate_tab->hbox));
                     if(alternate_pn >= 0)
                         gtk_notebook_set_current_page(vterm->notebook, alternate_pn);
                     return true;
@@ -175,7 +140,7 @@ namespace VTERM{
         return false;
     }
 
-    gboolean VTerm::window_key_release_cb(GtkWidget* _window, GdkEventKey* event, gpointer _data){
+    gboolean VTerm::window_key_release_cb(GtkWindow* _window, GdkEventKey* event, gpointer _data){
         const guint keyreleased = gdk_keyval_to_lower(event->keyval);
 
         // We are doing smart policy
@@ -195,6 +160,41 @@ namespace VTERM{
         return false;
     }
 
+    void VTerm::notebook_switch_page_cb(GtkNotebook* _notebook, GtkBox* hbox,
+            guint _page_nu, gpointer _data){
+        VTab* vtab = vterm->getVTab(hbox);
+
+        // Sync the window title
+        const gchar* title = gtk_label_get_text(vtab->tab_label);
+        vterm->sync_window_title(title);
+
+        // Sets the show tab policy for NEEDED
+        if(VConf(show_tab_policy) == VConfig::ShowTabPolicy::NEEDED){
+            gtk_notebook_set_show_tabs(vterm->notebook,
+                                       (gtk_notebook_get_n_pages(vterm->notebook) == 1)?
+                                        false : true);
+        }
+
+        // Hide not showing tabs to make them not affect the terminal window
+        // size.. similar to gnome-terminal behavior
+        if(vterm->current_tab)
+            gtk_widget_hide(GTK_WIDGET(vterm->current_tab->vte_terminal));
+
+        // Flag all to be shown
+        gtk_widget_show_all(GTK_WIDGET(vtab->hbox));
+
+        // Update our records
+        vterm->alternate_tab = vterm->current_tab;
+        vterm->current_tab = vtab;
+
+        // Update the geometry hints; new tab could have different font and we
+        // might have added/deleted the tabs bar
+        window_set_size();
+
+        // Give focus to terminal widget
+        gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
+    }
+
     void VTerm::window_update_geometry(VTab* vtab){
         DEBUG_PRINT("\nWINDOW_SIZE: Updating window geometry..\n");
         /*
@@ -207,6 +207,7 @@ namespace VTERM{
          */
         VteTerminal* vte_terminal = VTE_TERMINAL(vtab->vte_terminal);
         GtkWidget* notebook = GTK_WIDGET(vterm->notebook);
+        GtkWidget* window = GTK_WIDGET(vterm->window);
 
         // So, first.. get the char width & height
         gint cell_width = vte_terminal_get_char_width(vte_terminal);
@@ -228,10 +229,10 @@ namespace VTERM{
         gint csd_width = 0;
         gint csd_height = 0;
 
-        if(gtk_widget_get_realized(vterm->window) && VConf(window_size_hints)){
+        if(gtk_widget_get_realized(window) && VConf(window_size_hints)){
             // Now size of csd
             GtkAllocation toplevel, contents;
-            gtk_widget_get_allocation(vterm->window, &toplevel);
+            gtk_widget_get_allocation(window, &toplevel);
             gtk_widget_get_allocation(notebook, &contents);
             csd_width = toplevel.width - contents.width;
             csd_height = toplevel.height - contents.height;
@@ -245,7 +246,7 @@ namespace VTERM{
             geometry.height_inc = cell_height;
             geometry.min_width = geometry.base_width + cell_width * 5;
             geometry.min_height = geometry.base_height + cell_height * 2;
-            gtk_window_set_geometry_hints(GTK_WINDOW(vterm->window),
+            gtk_window_set_geometry_hints(vterm->window,
                                           nullptr,
                                           &geometry,
                                           GdkWindowHints(GDK_HINT_RESIZE_INC |
@@ -271,8 +272,8 @@ namespace VTERM{
         window_update_geometry(vtab);
 
         // Not doing this to maximized or tiled windows
-        GdkWindow* gdk_window = gtk_widget_get_window (GTK_WIDGET (vterm->window));
-        if (gdk_window != NULL && (gdk_window_get_state (gdk_window) &
+        GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(vterm->window));
+        if (gdk_window != NULL && (gdk_window_get_state(gdk_window) &
             (GDK_WINDOW_STATE_MAXIMIZED | GDK_WINDOW_STATE_TILED | GDK_WINDOW_STATE_FULLSCREEN)))
             return;
 
@@ -286,7 +287,7 @@ namespace VTERM{
     }
 
     void VTerm::insertVTab(VTab* vtab){
-        GtkWidget* hbox = vtab->hbox;
+        GtkBox* hbox = vtab->hbox;
 
         // Register it in our map
         hboxVTabMap[hbox] = vtab;
@@ -299,10 +300,10 @@ namespace VTERM{
         }
 
         // insert in the right position
-        gtk_notebook_insert_page(notebook, hbox, vtab->tab_label, pn);
+        gtk_notebook_insert_page(notebook, GTK_WIDGET(hbox), GTK_WIDGET(vtab->tab_label), pn);
 
         // can reorder by drag & drop
-        gtk_notebook_set_tab_reorderable(notebook, hbox, true);
+        gtk_notebook_set_tab_reorderable(notebook, GTK_WIDGET(hbox), true);
 
         // flag them to be shown
         gtk_widget_show_all(GTK_WIDGET(hbox));
@@ -311,7 +312,7 @@ namespace VTERM{
         gtk_notebook_set_current_page(notebook, pn);
 
         // tab bar should fill the space
-        gtk_container_child_set(GTK_CONTAINER(notebook), hbox,
+        gtk_container_child_set(GTK_CONTAINER(notebook), GTK_WIDGET(hbox),
                 "tab-fill", false,
                 "tab-expand", true, nullptr);
 
@@ -324,7 +325,7 @@ namespace VTERM{
             return;
         vtab->in_destruction = true;
 
-        GtkWidget* hbox = vtab->hbox;
+        GtkBox* hbox = vtab->hbox;
 
         // If the only tab, exit with success
         if(gtk_notebook_get_n_pages(notebook) == 1)
@@ -361,7 +362,7 @@ namespace VTERM{
     }
 
     void VTerm::run(){
-        gtk_widget_show_all(window);
+        gtk_widget_show_all(GTK_WIDGET(window));
 
         VTab::create_tab(true);
 
@@ -371,7 +372,7 @@ namespace VTERM{
 
     VTerm::VTerm(){
         // Create top level window
-        window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
         // Create notebook
         notebook = GTK_NOTEBOOK(gtk_notebook_new());
@@ -381,8 +382,8 @@ namespace VTERM{
             window_screen_changed_cb(window, nullptr, nullptr);
 
         // Apply the config on both
-        VConfig::getVConfig().apply_window_config(GTK_WINDOW(window));
-        VConfig::getVConfig().apply_notebook_config(GTK_NOTEBOOK(notebook));
+        VConfig::getVConfig().apply_window_config(window);
+        VConfig::getVConfig().apply_notebook_config(notebook);
 
         // Connect widgets signals
         connect_signals();

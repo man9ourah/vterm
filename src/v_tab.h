@@ -8,29 +8,30 @@
 using namespace std;
 namespace VTERM{
 
-
-    /*
-     * Represent one tab
-     */
     class VTab{
         public:
-            // HBox
-            GtkWidget* hbox;
-
-            // vte widget
-            GtkWidget* vte_terminal;
-
-            // tab label
-            GtkWidget* tab_label;
-
-            // terminal scrollbar
-            GtkWidget* scrollbar;
-
-            // Flag that we are being destructed
-            gboolean in_destruction = false;
+            /*
+             * HBox: parent of all!
+             */
+            GtkBox* hbox;
 
             /*
-             * Struct encapsulating one mode info
+             * VTE terminal widget
+             */
+            VteTerminal* vte_terminal;
+
+            /*
+             * Tab label
+             */
+            GtkLabel* tab_label;
+
+            /*
+             * Scrollbar
+             */
+            GtkScrollbar* scrollbar;
+
+            /*
+             * Struct encapsulating current mode info
              */
             struct ModeInfo{
                 // Which mode?
@@ -43,17 +44,30 @@ namespace VTERM{
             } current_mode;
 
             /*
-             * Static instance builder to decide cmd & cwd
+             * Flag that we are being destructed
              */
-            static VTab* create_tab(gboolean is_first_tab);
+            gboolean in_destruction = false;
+
+            /*
+             * Static methods
+             */
 
             /*
              * Events callback functions
              */
             static void terminal_child_exit_cb(VteTerminal* _vte_terminal, gint _status, gpointer data);
-            static void terminal_title_changed_cb(VteTerminal* vte_terminal, gpointer data);
             static void terminal_create_cb(VteTerminal* _vte_terminal, GPid pid, GError *error, gpointer data);
-            static gboolean terminal_key_press_cb(GtkWidget* terminal, GdkEventKey* event, gpointer data);
+            static void terminal_title_changed_cb(VteTerminal* vte_terminal, gpointer data);
+            static gboolean terminal_key_press_cb(VteTerminal* terminal, GdkEventKey* event, gpointer data);
+
+            /*
+             * Static VTab instance builder to decide cmd & cwd
+             */
+            static VTab* create_tab(gboolean is_first_tab);
+
+            /*
+             * Non-static methods
+             */
 
             /*
              * Connect signals of widgets under vtab
@@ -66,39 +80,16 @@ namespace VTERM{
             void switch_mode(ModeInfo::ModeOp new_mode);
 
             /*
-             * TODO:: Should we disconnect signals the way gnome terminal do?
+             * Setter:: create a new tab label
              */
+            void create_tab_label();
 
             /*
-             * Create a new tab label
-             */
-            GtkWidget* create_tab_label(){
-                GtkLabel* label = GTK_LABEL(gtk_label_new("VTerminal"));
-
-                gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_CENTER);
-                gtk_widget_set_valign (GTK_WIDGET(label), GTK_ALIGN_BASELINE);
-                gtk_widget_set_margin_start(GTK_WIDGET(label), 0);
-                gtk_widget_set_margin_end(GTK_WIDGET(label), 0);
-                gtk_widget_set_margin_top(GTK_WIDGET(label), 0);
-                gtk_widget_set_margin_bottom(GTK_WIDGET(label), 0);
-
-                gtk_label_set_single_line_mode (label, true);
-                gtk_label_set_ellipsize(label, VConf(tab_label_trim_first) ?
-                                                PANGO_ELLIPSIZE_START :
-                                                PANGO_ELLIPSIZE_END);
-
-                gtk_label_set_width_chars(label, 15);
-
-                return GTK_WIDGET(label);
-            }
-
-            /*
-             * Sync tab label with vte_terminal
+             * Setter:: sync tab label with vte_terminal
              */
             void sync_tab_label(const gchar* title){
-                gtk_label_set_text(GTK_LABEL(tab_label), title);
+                gtk_label_set_text(tab_label, title);
             }
-
         private:
             /*
              * Prevent making instances directly
