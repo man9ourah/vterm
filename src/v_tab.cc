@@ -1,12 +1,13 @@
-#include "v_tab.h"
 #include "common.h"
-#include "gdk/gdkkeysyms.h"
-#include "v_term.h"
-#include <memory>
 #include "v_config.h"
-#include <gdk/gdkx.h>
-#include <limits>
 #include "v_keybindings.h"
+#include "v_tab.h"
+#include "v_term.h"
+
+#include <gdk/gdkx.h>
+#include <gdk/gdkkeysyms.h>
+#include <limits>
+#include <memory>
 
 using namespace std;
 

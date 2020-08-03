@@ -1,10 +1,11 @@
 #include "v_term.h"
-#include "gdk/gdkkeysyms.h"
 #include "v_config.h"
 #include "v_tab.h"
-#include <memory>
-#include "common.h"
 #include "v_keybindings.h"
+#include "common.h"
+
+#include <memory>
+#include <gdk/gdkkeysyms.h>
 
 using namespace std;
 namespace VTERM{

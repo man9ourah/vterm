@@ -1,7 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
-#include <gtk/gtk.h>
 #include "vte/vte.h"
+
+#include <gtk/gtk.h>
 
 /*
  * VTerm information

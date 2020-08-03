@@ -1,8 +1,9 @@
 #ifndef V_CONFIG_H
 #define V_CONFIG_H
-#include "pango/pango-font.h"
 #include "vte/vte.h"
 #include "common.h"
+
+#include <pango/pango-font.h>
 #include <array>
 
 using namespace std;

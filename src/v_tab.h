@@ -2,8 +2,9 @@
 #define V_TAB_H
 #include "vte/vte.h"
 #include "common.h"
-#include <map>
 #include "v_config.h"
+
+#include <map>
 
 using namespace std;
 namespace VTERM{

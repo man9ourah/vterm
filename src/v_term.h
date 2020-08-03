@@ -2,8 +2,9 @@
 #define V_TERM_H
 #include "common.h"
 #include "v_config.h"
-#include <memory>
 #include "v_tab.h"
+
+#include <memory>
 
 using namespace std;
 namespace VTERM{
