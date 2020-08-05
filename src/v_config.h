@@ -290,6 +290,8 @@ namespace VTERM{
                 vte_terminal_set_word_char_exceptions(vte_terminal, word_char_exceptions);
                 vte_terminal_set_scrollback_lines(vte_terminal, scrollback_lines);
                 vte_terminal_set_font(vte_terminal, font);
+                vte_terminal_set_colors(vte_terminal, &color_foreground,
+                        &color_background, palette.data(), palette.size());
                 vte_terminal_set_color_bold(vte_terminal, &color_bold);
                 vte_terminal_set_color_foreground(vte_terminal, &color_foreground);
                 vte_terminal_set_color_background(vte_terminal, &color_background);
@@ -297,8 +299,6 @@ namespace VTERM{
                 vte_terminal_set_color_cursor_foreground(vte_terminal, &color_cursor_foreground);
                 vte_terminal_set_color_highlight(vte_terminal, &color_highlight);
                 vte_terminal_set_color_highlight_foreground(vte_terminal, &color_highlight_foreground);
-                vte_terminal_set_colors(vte_terminal, &color_foreground,
-                        &color_background, palette.data(), palette.size());
                 vte_terminal_set_cursor_shape(vte_terminal, cursor_shape);
                 vte_terminal_set_cursor_blink_mode(vte_terminal, cursor_blink_mode);
                 vte_terminal_set_backspace_binding(vte_terminal, backspace_binding);
