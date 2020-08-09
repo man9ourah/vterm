@@ -29,6 +29,9 @@ namespace VTERM{
             /*
              * Keybindings specific to normal mode
              */
+            case VMode::ModeOp::VISUAL_MODE:
+            case VMode::ModeOp::VISUAL_LINE_MODE:
+            case VMode::ModeOp::VISUAL_BLOCK_MODE:
             case VMode::ModeOp::NORMAL_MODE:{
                 if(modifiers == GDK_SHIFT_MASK){
                     switch(keypressed){
@@ -84,6 +87,19 @@ namespace VTERM{
                             DEBUG_PRINT("\nVTermCursor:  eol\n");
                             vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::EOL);
                             gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                            return true;
+                        }
+
+                        case GDK_KEY_V:
+                        case GDK_KEY_v:{
+                            switch_mode(VMode::ModeOp::VISUAL_LINE_MODE);
+                            return true;
+                        }
+                    }
+                }else if(modifiers == GDK_CONTROL_MASK){
+                    switch(keypressed){
+                        case GDK_KEY_v:{
+                            switch_mode(VMode::ModeOp::VISUAL_BLOCK_MODE);
                             return true;
                         }
                     }
@@ -158,6 +174,11 @@ namespace VTERM{
                             gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                             return true;
                         }
+
+                        case GDK_KEY_v:{
+                            switch_mode(VMode::ModeOp::VISUAL_MODE);
+                            return true;
+                        }
                     }
                 }
 
@@ -178,6 +199,9 @@ namespace VTERM{
 
     void VTab::VMode::show_vmode(){
         switch(mode){
+            case VMode::ModeOp::VISUAL_MODE:
+            case VMode::ModeOp::VISUAL_LINE_MODE:
+            case VMode::ModeOp::VISUAL_BLOCK_MODE:
             case VMode::ModeOp::NORMAL_MODE:{
                 gtk_widget_show(GTK_WIDGET(cursor_indicator));
                 break;
@@ -210,6 +234,8 @@ namespace VTERM{
         if(mode == VMode::ModeOp::INSERT_MODE)
             vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::INPUT);
 
+        vte_terminal_vterm_cursor_selection(parent_vtab->vte_terminal, VTermSelectionType::VTERM_SELECTION_NONE);
+
         // Set our mode to normal
         mode = VMode::ModeOp::NORMAL_MODE;
 
@@ -229,11 +255,29 @@ namespace VTERM{
         // shown
         vte_terminal_vterm_cursor_set_shown(parent_vtab->vte_terminal, false);
 
+        vte_terminal_vterm_cursor_selection(parent_vtab->vte_terminal, VTermSelectionType::VTERM_SELECTION_NONE);
+
         // Set our mode to insert
         mode = VMode::ModeOp::INSERT_MODE;
 
         // Hide normal mode cursor
         show_vmode();
+    }
+
+    void VTab::VMode::enter_visual_mode(ModeOp visual_mode_kind){
+        // We have to be already in normal mode!
+        g_assert(mode == VMode::ModeOp::NORMAL_MODE);
+
+        VTermSelectionType selection_type = VTERM_CHAR_SELECTION;
+        if(visual_mode_kind == VISUAL_LINE_MODE)
+            selection_type = VTERM_LINE_SELECTION;
+        else if(visual_mode_kind == VISUAL_BLOCK_MODE)
+            selection_type = VTERM_BLOCK_SELECTION;
+
+        vte_terminal_vterm_cursor_selection(parent_vtab->vte_terminal, selection_type);
+
+        // Set our mode to insert
+        mode = VMode::ModeOp::VISUAL_MODE;
     }
 
     void VTab::VMode::switch_mode(VMode::ModeOp new_mode){
@@ -244,6 +288,17 @@ namespace VTERM{
                 // We are in normal mode
                 // What mode we want to switch to?
                 switch(new_mode){
+                    /*
+                     * normal->visual
+                     */
+                    case VMode::ModeOp::VISUAL_MODE:
+                    case VMode::ModeOp::VISUAL_LINE_MODE:
+                    case VMode::ModeOp::VISUAL_BLOCK_MODE:{
+                        DEBUG_PRINT("\nMODE: NORMAL->VISAUL\n");
+                        enter_visual_mode(new_mode);
+                        break;
+                    }
+
                     /*
                      * normal->normal TOGGLE(insert)
                      * normal->insert
@@ -259,11 +314,55 @@ namespace VTERM{
                 break;
             }
 
+            case VMode::ModeOp::VISUAL_MODE:
+            case VMode::ModeOp::VISUAL_LINE_MODE:
+            case VMode::ModeOp::VISUAL_BLOCK_MODE:{
+                // We are in normal mode
+                // What mode we want to switch to?
+                switch(new_mode){
+                    /*
+                     * visual->visual toggle(normal)
+                     * visual->normal
+                     */
+                    case VMode::ModeOp::VISUAL_MODE:
+                    case VMode::ModeOp::VISUAL_LINE_MODE:
+                    case VMode::ModeOp::VISUAL_BLOCK_MODE:
+                    case VMode::ModeOp::NORMAL_MODE:{
+                        DEBUG_PRINT("\nmode: VISUAL->NORMAL\n");
+                        enter_normal_mode();
+                        break;
+                    }
+
+                    /*
+                     * visual->insert
+                     */
+                    case VMode::ModeOp::INSERT_MODE:{
+                        DEBUG_PRINT("\nMODE: VISUAL->INSERT\n");
+                        enter_insert_mode();
+                        break;
+                    }
+                }
+
+                break;
+            }
+
             case VMode::ModeOp::INSERT_MODE:{
 
                 // We are in insert mode
                 // What mode we want to switch to?
                 switch(new_mode){
+                    /*
+                     * insert->visual
+                     */
+                    case VMode::ModeOp::VISUAL_MODE:
+                    case VMode::ModeOp::VISUAL_LINE_MODE:
+                    case VMode::ModeOp::VISUAL_BLOCK_MODE:{
+                        DEBUG_PRINT("\nMODE: INSERT->VISAUL\n");
+                        enter_normal_mode();
+                        enter_visual_mode(new_mode);
+                        break;
+                    }
+
                     /*
                      * insert->normal
                      */

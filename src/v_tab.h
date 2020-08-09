@@ -60,6 +60,10 @@ namespace VTERM{
                     INSERT_MODE = 0,
 
                     NORMAL_MODE,
+
+                    VISUAL_MODE,
+                    VISUAL_LINE_MODE,
+                    VISUAL_BLOCK_MODE,
                 } mode;
 
                 /*
@@ -94,6 +98,11 @@ namespace VTERM{
                  * Enters normal mode
                  */
                 void enter_normal_mode();
+
+                /*
+                 * Enters visual mode
+                 */
+                void enter_visual_mode(ModeOp visual_mode_kind);
 
                 /*
                  * Mode specific keyboard events handler
