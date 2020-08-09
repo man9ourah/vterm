@@ -14,5 +14,6 @@
 [ ] Motion: Go to first non-blank char.
 [ ] Motion: ctrl-d/u ctrl-b/f for half and full page movement.
 [ ] Motion: Move cursor to prev/next prompt.
+[ ] Motion: vim o command: swap cursor & selection start positions.
 
 [X] Prompt scrolling to down should be to next prompt.
