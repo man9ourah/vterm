@@ -185,7 +185,7 @@ namespace VTERM{
         // Hide not showing tabs to make them not affect the terminal window
         // size.. similar to gnome-terminal behavior
         if(vterm->current_tab)
-            gtk_widget_hide(GTK_WIDGET(vterm->current_tab->vte_terminal));
+            gtk_widget_hide(GTK_WIDGET(vterm->current_tab->overlay));
 
         // Flag all to be shown
         gtk_widget_show_all(GTK_WIDGET(vtab->hbox));
@@ -317,8 +317,9 @@ namespace VTERM{
         gtk_notebook_set_current_page(notebook, pn);
 
         // tab bar should fill the space
+        // TODO:: Maybe make this configurable
         gtk_container_child_set(GTK_CONTAINER(notebook), GTK_WIDGET(hbox),
-                "tab-fill", false,
+                "tab-fill", true,
                 "tab-expand", true, nullptr);
 
         // Give focus to terminal
@@ -369,6 +370,7 @@ namespace VTERM{
     void VTerm::run(){
         gtk_widget_show_all(GTK_WIDGET(window));
 
+        // Create the first tab
         VTab::create_tab(this, true);
 
         // fire!

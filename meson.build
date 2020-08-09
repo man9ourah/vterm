@@ -21,7 +21,7 @@ libvte_proj = subproject('vte')
 libvte_dep = libvte_proj.get_variable('libvte_gtk3_static_dep')
 
 # sources in our project
-src = ['src/v_term.cc', 'src/v_tab.cc']
+src = ['src/v_term.cc', 'src/v_tab.cc', 'src/v_mode.cc']
 
 if get_option('buildtype').contains('debug')
   args = ['-DVTERM_DEBUG=1']

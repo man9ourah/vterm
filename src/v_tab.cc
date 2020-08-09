@@ -50,7 +50,7 @@ namespace VTERM{
         VTerm* vterm = vtab->vterm;
 
         /*
-         * This will get really complicated.. so:
+         * This will get really complicated overtime.. so:
          *  - NO FALL THROUGH!! direct fall through when there is no code between 
          *  two cases are fine.
          *
@@ -58,7 +58,6 @@ namespace VTERM{
          *  not depend on any logic after its parent switch case.
          *
          *  - All cases should be surrounded by {}
-         *
          */
 
         /*
@@ -71,7 +70,7 @@ namespace VTERM{
                  * Toggle normal mode
                  */
                 case VKEY_TOGGLE_NORMAL:{
-                    vtab->switch_mode(ModeInfo::ModeOp::NORMAL_MODE);
+                    vtab->current_mode->switch_mode(VMode::ModeOp::NORMAL_MODE);
                     return true;
                 }
 
@@ -187,65 +186,21 @@ namespace VTERM{
             }
         } // endif (modifiers == GDK_CONTROL_MASK)
 
-        /*
-         * Now to the keybindings that are specific to certain modes
-         */
-        switch(vtab->current_mode.mode){
-            /*
-             * Keybindings specific to normal mode
-             */
-            case ModeInfo::ModeOp::NORMAL_MODE:{
-                if(modifiers == GDK_CONTROL_MASK){
-
-                }else{
-                    switch(keypressed){
-                        case GDK_KEY_k:
-                        case GDK_KEY_Up:{
-                            DEBUG_PRINT("\nNormal: cursor up\n");
-                            return true;
-                        }
-
-                        case GDK_KEY_j:
-                        case GDK_KEY_Down:{
-                            DEBUG_PRINT("\nNormal: cursor down\n");
-                            return true;
-                        }
-
-                        case GDK_KEY_l:
-                        case GDK_KEY_Left:{
-                            DEBUG_PRINT("\nNormal: cursor left\n");
-                            return true;
-                        }
-
-                        case GDK_KEY_h:
-                        case GDK_KEY_Right:{
-                            DEBUG_PRINT("\nNormal: cursor right\n");
-                            return true;
-                        }
-
-                    }
-                }
-
-                // Do not pass any event when in normal mode
-                return true;
-            }
-
-            /*
-             * Keybindings specific to insert mode
-             */
-            case ModeInfo::ModeOp::INSERT_MODE:{
-                // None
-                // Pass event
-                return false;
-            }
+        // See if the vmode wants it
+        if(vtab->current_mode->handle_keyboard_events(event)){
+            // vmode handled it
+            return true;
         }
 
+        // Nobody wants it!
         return false;
     }
 
     VTab* VTab::create_tab(VTerm* vterm, gboolean is_first_tab){
         gchar *cwd = VConf(cli_cwd), **cmd = VConf(cli_cmd), **env = nullptr;
 
+        // export WINDOWID env var..
+        // termite's code
 #ifdef GDK_WINDOWING_X11
         env = g_get_environ();
         if (GDK_IS_X11_SCREEN(gtk_widget_get_screen(GTK_WIDGET(vterm->window)))) {
@@ -308,60 +263,6 @@ namespace VTERM{
         g_signal_connect(vte_terminal, "window-title-changed", G_CALLBACK(VTab::terminal_title_changed_cb), this);
     }
 
-    void VTab::switch_mode(ModeInfo::ModeOp new_mode){
-        // First, what mode are we in?
-        switch(current_mode.mode){
-            case ModeInfo::ModeOp::NORMAL_MODE:{
-
-                // We are in normal mode
-                // What mode we want to switch to?
-                switch(new_mode){
-                    /*
-                     * normal->normal TOGGLE(insert)
-                     * normal->insert
-                     */
-                    case ModeInfo::ModeOp::NORMAL_MODE:
-                    case ModeInfo::ModeOp::INSERT_MODE:{
-                        DEBUG_PRINT("\nNORMAL->INSERT\n");
-                        current_mode.mode = ModeInfo::ModeOp::INSERT_MODE;
-                        vte_terminal_set_input_enabled(vte_terminal, true);
-                        return;
-                    }
-                }
-
-                return;
-            }
-
-            case ModeInfo::ModeOp::INSERT_MODE:{
-
-                // We are in insert mode
-                // What mode we want to switch to?
-                switch(new_mode){
-                    /*
-                     * insert->normal
-                     */
-                    case ModeInfo::ModeOp::NORMAL_MODE:{
-                        DEBUG_PRINT("\nINSERT->NORMAL\n");
-                        current_mode.mode = ModeInfo::ModeOp::NORMAL_MODE;
-                        vte_terminal_set_input_enabled(vte_terminal, false);
-                        return;
-                    }
-
-                    /*
-                     * insert->insert
-                     * this should never happen
-                     */
-                    case ModeInfo::ModeOp::INSERT_MODE:{
-                        DEBUG_PRINT("\nINSERT->INSERT\n");
-                        return;
-                    }
-                }
-
-                return;
-            }
-        }
-    }
-
     void VTab::create_tab_label(){
         tab_label = GTK_LABEL(gtk_label_new("VTerminal"));
 
@@ -381,15 +282,25 @@ namespace VTERM{
     }
 
     VTab::VTab(VTerm* vterm, gchar* cwd, gchar** cmd, gchar** env): vterm(vterm){
+        // Create the box
+        hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+
+        // Create the overlay
+        overlay = GTK_OVERLAY(gtk_overlay_new());
+
         // Create terminal
         vte_terminal = VTE_TERMINAL(vte_terminal_new());
+
+        // Create the tab label
         create_tab_label();
 
-        // Box it
-        hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-        gtk_box_pack_start(hbox, GTK_WIDGET(vte_terminal), true, true, 0);
+        // Add the terminal to the overlay as main child
+        gtk_container_add(GTK_CONTAINER(overlay), GTK_WIDGET(vte_terminal));
 
-        // Scrollbar
+        // Add overlay to the box
+        gtk_box_pack_start(hbox, GTK_WIDGET(overlay), true, true, 0);
+
+        // Create scrollbar and add it to the box
         if(VConf(show_scrollbar)){
             scrollbar = GTK_SCROLLBAR(gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL,
                     gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(vte_terminal))));
@@ -398,6 +309,9 @@ namespace VTERM{
 
         // Apply the config on vte terminal
         VConfig::getVConfig().apply_vte_config(vte_terminal);
+
+        // Create a new VMode to prepare for operation
+        current_mode = new VMode(this);
 
         // Connect the signals
         connect_signals();
@@ -411,4 +325,8 @@ namespace VTERM{
                 spawn_flags, NULL, NULL, NULL, -1, NULL, terminal_create_cb, this);
     }
 
+    VTab::~VTab(){
+        // Delete inner current mode
+        delete current_mode;
+    }
 }

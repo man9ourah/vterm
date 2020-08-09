@@ -24,6 +24,11 @@ namespace VTERM{
             GtkBox* hbox;
 
             /*
+             * Overlay, its main child is vte terminal
+             */
+            GtkOverlay* overlay;
+
+            /*
              * VTE terminal widget
              */
             VteTerminal* vte_terminal;
@@ -39,22 +44,75 @@ namespace VTERM{
             GtkScrollbar* scrollbar;
 
             /*
-             * Struct encapsulating current mode info
+             * Flag that we are being destructed
              */
-            struct ModeInfo{
-                // Which mode?
+            gboolean in_destruction = false;
+
+            /*
+             * Struct encapsulating current mode of operation
+             */
+            struct VMode{
+
+                /*
+                 * Current mode
+                 */
                 enum ModeOp{
                     INSERT_MODE = 0,
 
                     NORMAL_MODE,
                 } mode;
 
-            } current_mode;
+                /*
+                 * Parent VTab
+                 */
+                VTab* parent_vtab;
 
-            /*
-             * Flag that we are being destructed
-             */
-            gboolean in_destruction = false;
+                /*
+                 * Cursor indicator
+                 */
+                GtkDrawingArea* cursor_indicator;
+
+                /*
+                 * Static methods
+                 */
+                /*
+                 * Events callback functions
+                 */
+                static gboolean cursor_indicator_draw_cb(GtkDrawingArea* _cursor_indicator, cairo_t* cr, gpointer data);
+                static void cursor_indicator_realize_cb(GtkDrawingArea* cursor_indicator, gpointer _data);
+
+                /*
+                 * Non-static methods
+                 */
+
+                /*
+                 * Enters insert mode
+                 */
+                void enter_insert_mode();
+
+                /*
+                 * Enters normal mode
+                 */
+                void enter_normal_mode();
+
+                /*
+                 * Mode specific keyboard events handler
+                 */
+                gboolean handle_keyboard_events(GdkEventKey* event);
+
+                /*
+                 * Show overlay widgets based on mode
+                 */
+                void show_vmode();
+
+                /*
+                 * Switches the tab to new mode
+                 */
+                void switch_mode(VMode::ModeOp new_mode);
+
+                VMode(VTab* parent_vtab);
+
+            } *current_mode;
 
             /*
              * Static methods
@@ -83,11 +141,6 @@ namespace VTERM{
             void connect_signals();
 
             /*
-             * Switches the tab to new mode
-             */
-            void switch_mode(ModeInfo::ModeOp new_mode);
-
-            /*
              * Setter:: create a new tab label
              */
             void create_tab_label();
@@ -98,6 +151,9 @@ namespace VTERM{
             void sync_tab_label(const gchar* title){
                 gtk_label_set_text(tab_label, title);
             }
+
+            // Destructor
+            ~VTab();
         private:
             /*
              * Prevent making instances directly
