@@ -14,6 +14,14 @@ namespace VTERM{
         public:
 
             /*
+             * Regex that we look for in terminal content
+             */
+            enum Regex_Desc{
+                URL,
+                EMAIL,
+            };
+
+            /*
              * Parent VTerm object
              */
             VTerm* vterm;
@@ -47,6 +55,11 @@ namespace VTERM{
              * Flag that we are being destructed
              */
             gboolean in_destruction = false;
+
+            /*
+             * Map from regex tag to Regex_Desc
+             */
+            map<int, Regex_Desc> regexTagMap;
 
             /*
              * Struct encapsulating current mode of operation
@@ -157,6 +170,7 @@ namespace VTERM{
             static void terminal_create_cb(VteTerminal* _vte_terminal, GPid pid, GError *error, gpointer data);
             static void terminal_title_changed_cb(VteTerminal* vte_terminal, gpointer data);
             static gboolean terminal_key_press_cb(VteTerminal* terminal, GdkEventKey* event, gpointer data);
+            static gboolean terminal_button_press_cb(VteTerminal* _terminal, GdkEventButton* event, gpointer data);
 
             /*
              * Static VTab instance builder to decide cmd & cwd
@@ -171,6 +185,11 @@ namespace VTERM{
              * Connect signals of widgets under vtab
              */
             void connect_signals();
+
+            /*
+             * Add regex matches to terminal
+             */
+            void add_regex(Regex_Desc regex_desc, const char* pattern);
 
             /*
              * Setter:: create a new tab label

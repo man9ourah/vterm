@@ -3,6 +3,8 @@
 #include "v_keybindings.h"
 #include "v_tab.h"
 #include "v_term.h"
+#include "vtepcre2.h"
+#include "terminal-regex.h"
 
 #include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>
@@ -196,6 +198,41 @@ namespace VTERM{
         return false;
     }
 
+    gboolean VTab::terminal_button_press_cb(VteTerminal* _terminal, GdkEventButton* event, gpointer data){
+        VTab* vtab = (VTab*)data;
+        char* match = nullptr;
+        int tag;
+        if(!(match = vte_terminal_match_check_event(vtab->vte_terminal, (GdkEvent*) event, &tag))){
+            // the event is not interesting
+            return false;
+        }
+
+        auto desc = vtab->regexTagMap.find(tag);
+        if(desc == vtab->regexTagMap.end()){
+            g_free(match);
+            return false;
+        }
+
+        char* cmd[3] = {nullptr, match, nullptr};
+        switch(desc->second){
+            case Regex_Desc::EMAIL:{
+                // Open mailto
+                cmd[0] = VConf(mail);
+                break;
+            }
+            case Regex_Desc::URL:{
+                // Open url
+                cmd[0] = VConf(browser);
+                break;
+            }
+        }
+
+        launch_app(cmd);
+
+        g_free(match);
+        return true;
+    }
+
     VTab* VTab::create_tab(VTerm* vterm, gboolean is_first_tab){
         gchar *cwd = VConf(cli_cwd), **cmd = VConf(cli_cmd), **env = nullptr;
 
@@ -256,11 +293,26 @@ namespace VTERM{
         return new VTab(vterm, cwd, cmd, env);
     }
 
+    void VTab::add_regex(Regex_Desc regex_desc, const char* pattern){
+        // Add it to terminal
+        int tag = vte_terminal_match_add_regex(vte_terminal,
+            vte_regex_new_for_match(pattern,
+                                    (gssize) strlen(pattern),
+                                    PCRE2_MULTILINE | PCRE2_NOTEMPTY,
+                                    nullptr),
+            0);
+        vte_terminal_match_set_cursor_name(vte_terminal, tag, "hand");
+
+        // Add it to our map
+        regexTagMap[tag] = regex_desc;
+    }
+
     void VTab::connect_signals(){
         //TODO:: handle resize-window signal
         g_signal_connect(vte_terminal, "key-press-event", G_CALLBACK(terminal_key_press_cb), this);
         g_signal_connect(vte_terminal, "child-exited", G_CALLBACK(VTab::terminal_child_exit_cb), this);
         g_signal_connect(vte_terminal, "window-title-changed", G_CALLBACK(VTab::terminal_title_changed_cb), this);
+        g_signal_connect(vte_terminal, "button-press-event", G_CALLBACK(VTab::terminal_button_press_cb), this);
     }
 
     void VTab::create_tab_label(){
@@ -315,6 +367,11 @@ namespace VTERM{
 
         // Connect the signals
         connect_signals();
+
+        // Add regex
+        add_regex(Regex_Desc::URL, REGEX_URL_AS_IS);
+        add_regex(Regex_Desc::URL, REGEX_URL_HTTP);
+        add_regex(Regex_Desc::EMAIL, REGEX_EMAIL);
 
         // insert it to the notebook
         vterm->insertVTab(this);

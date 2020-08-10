@@ -197,6 +197,9 @@ namespace VTERM{
             gchar   *window_title = nullptr, // null: mirror current tab title
                     *window_role = nullptr;  // null: wont be set
 
+            gchar *browser = g_strdup("firefox");
+            gchar *mail = g_strdup("thunderbird");
+
             gboolean window_size_hints = true;
 
             /*
@@ -439,6 +442,8 @@ namespace VTERM{
                 GET_STRING_AND_FREE(behavior, word_char_exceptions)
                 GET_STRING_AND_FREE(behavior, window_title)
                 GET_STRING_AND_FREE(behavior, window_role)
+                GET_STRING_AND_FREE(behavior, browser)
+                GET_STRING_AND_FREE(behavior, mail)
 
                 PARSE_STRING(behavior, cursor_blink_mode,
                         "on", VTE_CURSOR_BLINK_ON,

@@ -7,6 +7,7 @@
 [ ] Shortcuts: Better shortcut to enter/exit visual modes and normal mode.
 [ ] Shortcuts: yank selection or line if in normal mode. 
 [ ] Shortcuts: start and hashtag command to search for word under cursor.
+[ ] Shortcuts: Better shortcuts to search.
 
 [ ] Add summery of shortcuts in help
 
@@ -18,21 +19,20 @@
 [ ] FIX: Add search wrap around to config or as shortcut.
 [ ] FIX: Check shortcuts when capslock is set!
 
-[X] FIX: Move vterm cursor with search. 
-[ ] FIX: make search entry BG configurable
-
+[ ] Style: make search entry BG configurable
 [ ] Style: Add tabs styling through css.
 
-[ ] Feature: Search in terminal.
 [ ] Feature: Search for selected text in browser.
 [ ] Feature: Url mode. 
-[ ] Feature: clickable urls.
 [ ] Feature: Fullscreen.
-[ ] Feature: Figure out some mode indication on the screen.
+[ ] Feature: Figure out some mode indication on the screen (cursor color!).
 
 [ ] Motion: Go to first non-blank char.
 [ ] Motion: ctrl-d/u ctrl-b/f for half and full page movement.
 [ ] Motion: Move cursor to prev/next prompt.
 [ ] Motion: vim o command: swap cursor & selection start positions.
 
+[X] Feature: clickable urls.
+[X] FIX: Move vterm cursor with search. 
+[X] Feature: Search in terminal.
 [X] Prompt scrolling to down should be to next prompt.

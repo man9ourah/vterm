@@ -54,5 +54,17 @@ namespace VTERM{
         }
         return shell;
     }
+
+    static inline void launch_app(char** cmd){
+        GError *error = nullptr;
+
+        GPid child_pid;
+        if (!g_spawn_async(nullptr, cmd, nullptr, G_SPAWN_SEARCH_PATH,
+                           nullptr, nullptr, &child_pid, &error)) {
+            g_printerr("error launching '%s': %s\n", cmd[0], error->message);
+            g_error_free(error);
+        }
+        g_spawn_close_pid(child_pid);
+    }
 }
 #endif
