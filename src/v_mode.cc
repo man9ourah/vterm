@@ -2,6 +2,31 @@
 #include "gdk/gdkkeysyms.h"
 #include "src/v_term.h"
 #include "v_tab.h"
+#include "vtepcre2.h"
+
+/*
+ * Regext functions taken from vte example code
+ */
+static void
+jit_regex(VteRegex* regex)
+{
+        GError *error = nullptr;
+        if (!vte_regex_jit(regex, PCRE2_JIT_COMPLETE, &error) ||
+            !vte_regex_jit(regex, PCRE2_JIT_PARTIAL_SOFT, &error)) {
+                DEBUG_PRINT("JITing regex failed: %s\n", error->message);
+        }
+}
+
+static VteRegex*
+compile_regex_for_search(char const* pattern)
+{
+        uint32_t flags = PCRE2_UTF | PCRE2_NO_UTF_CHECK | PCRE2_MULTILINE;
+        auto regex = vte_regex_new_for_search(pattern, strlen(pattern), flags, nullptr);
+        if (regex != nullptr)
+                jit_regex(regex);
+
+        return regex;
+}
 
 namespace VTERM{
 
@@ -16,6 +41,77 @@ namespace VTERM{
         // through 
         GdkWindow* gdkwindow = gtk_widget_get_window(GTK_WIDGET(cursor_indicator));
         gdk_window_set_pass_through(gdkwindow, true);
+    }
+
+    void VTab::VMode::search_entry_next_cb(GtkSearchEntry* _search_entry, gpointer data){
+        VMode* vmode = (VMode*)data;
+
+        if(vmode->search_dir == SearchDir::FORWARD_SEARCH)
+            return;
+
+        // Change the icon
+        gtk_entry_set_icon_from_icon_name(GTK_ENTRY(vmode->search_entry),
+                GTK_ENTRY_ICON_PRIMARY, "go-down-symbolic");
+
+        // Change our member var
+        vmode->search_dir = SearchDir::FORWARD_SEARCH;
+    }
+
+    void VTab::VMode::search_entry_prev_cb(GtkSearchEntry* _search_entry, gpointer data){
+        VMode* vmode = (VMode*)data;
+
+        if(vmode->search_dir == SearchDir::BACKWARD_SEARCH)
+            return;
+
+        // Change the icon
+        gtk_entry_set_icon_from_icon_name(GTK_ENTRY(vmode->search_entry),
+                GTK_ENTRY_ICON_PRIMARY, "go-up-symbolic");
+
+        // Change our member var
+        vmode->search_dir = SearchDir::BACKWARD_SEARCH;
+    }
+
+    void VTab::VMode::search_entry_changed_cb(GtkSearchEntry* _search_entry, gpointer data){
+        VMode* vmode = (VMode*)data;
+
+        // Set the regex
+        VteRegex *regex = compile_regex_for_search(gtk_entry_get_text(GTK_ENTRY(vmode->search_entry)));
+        vte_terminal_search_set_regex(vmode->parent_vtab->vte_terminal, regex, 0);
+        if(regex)
+            vte_regex_unref(regex);
+
+        // Delete selection to search from beginning
+        vte_terminal_vterm_cursor_selection(vmode->parent_vtab->vte_terminal,
+                VTermSelectionType::VTERM_SELECTION_NONE);
+
+        // Do search
+        vmode->do_search();
+    }
+
+    void VTab::VMode::search_entry_stop_cb(GtkSearchEntry* _search_entry, gpointer data){
+        VMode* vmode = (VMode*)data;
+
+        // Then hide the search widget
+        gtk_widget_hide(GTK_WIDGET(vmode->search_entry));
+
+        // Give focus to terminal
+        gtk_widget_grab_focus(GTK_WIDGET(vmode->parent_vtab->vte_terminal));
+    }
+
+    void VTab::VMode::do_search(){
+        switch(search_dir){
+            case BACKWARD_SEARCH:{
+                DEBUG_PRINT("BACKWARD_SEARCH\n");
+                vte_terminal_search_find_previous(parent_vtab->vte_terminal);
+                break;
+            }
+
+            case FORWARD_SEARCH:{
+                DEBUG_PRINT("FORWARD_SEARCH\n");
+                vte_terminal_search_find_next(parent_vtab->vte_terminal);
+                break;
+            }
+        }
     }
 
     gboolean VTab::VMode::handle_keyboard_events(GdkEventKey* event){
@@ -95,6 +191,25 @@ namespace VTERM{
                             switch_mode(VMode::ModeOp::VISUAL_LINE_MODE);
                             return true;
                         }
+
+                        case GDK_KEY_n:
+                        case GDK_KEY_N:{
+                            search_entry_prev_cb(search_entry, this);
+                            do_search();
+                            return true;
+                        }
+
+                        case GDK_KEY_question:{
+                            // Show the widget
+                            gtk_widget_show(GTK_WIDGET(search_entry));
+
+                            // Give focus to search widget
+                            gtk_widget_grab_focus(GTK_WIDGET(search_entry));
+
+                            // Start forward search
+                            search_entry_prev_cb(search_entry, this);
+                            return true;
+                        }
                     }
                 }else if(modifiers == GDK_CONTROL_MASK){
                     switch(keypressed){
@@ -172,6 +287,36 @@ namespace VTERM{
                             DEBUG_PRINT("\nVTermCursor:  end right word\n");
                             vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_WORD_END);
                             gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                            return true;
+                        }
+
+                        case GDK_KEY_slash:{
+                            // Show the widget
+                            gtk_widget_show(GTK_WIDGET(search_entry));
+
+                            // Give focus to search widget
+                            gtk_widget_grab_focus(GTK_WIDGET(search_entry));
+
+                            // Start forward search
+                            search_entry_next_cb(search_entry, this);
+                            return true;
+                        }
+
+                        case GDK_KEY_question:{
+                            // Show the widget
+                            gtk_widget_show(GTK_WIDGET(search_entry));
+
+                            // Give focus to search widget
+                            gtk_widget_grab_focus(GTK_WIDGET(search_entry));
+
+                            // Start forward search
+                            search_entry_prev_cb(search_entry, this);
+                            return true;
+                        }
+
+                        case GDK_KEY_n:{
+                            search_entry_next_cb(search_entry, this);
+                            do_search();
                             return true;
                         }
 
@@ -391,7 +536,9 @@ namespace VTERM{
         // Initial mode is insert mode
         mode = ModeOp::INSERT_MODE;
 
-        // Create the cursor indicator
+        /*
+         * Cursor indicator
+         */
         cursor_indicator = GTK_DRAWING_AREA(gtk_drawing_area_new());
 
         // Add it to the parent overlay
@@ -404,6 +551,28 @@ namespace VTERM{
         // Connect the draw signal
         g_signal_connect(cursor_indicator, "draw", G_CALLBACK(cursor_indicator_draw_cb), this);
         g_signal_connect(cursor_indicator, "realize", G_CALLBACK(cursor_indicator_realize_cb), this);
-    }
 
+        /*
+         * Search entry
+         */
+        search_entry = GTK_SEARCH_ENTRY(gtk_search_entry_new());
+
+        // Add it to overlay
+        gtk_overlay_add_overlay(parent_vtab->overlay, GTK_WIDGET(search_entry));
+
+        // Dont show the widget with show_all
+        gtk_widget_set_no_show_all(GTK_WIDGET(search_entry), true);
+
+        // Position it
+        // TODO:: Make this position configurable?
+        gtk_widget_set_halign(GTK_WIDGET(search_entry), GTK_ALIGN_END);
+        gtk_widget_set_valign(GTK_WIDGET(search_entry), GTK_ALIGN_START);
+
+        // Connect the search signal
+        g_signal_connect(search_entry, "next-match", G_CALLBACK(search_entry_next_cb), this);
+        g_signal_connect(search_entry, "previous-match", G_CALLBACK(search_entry_prev_cb), this);
+        g_signal_connect(search_entry, "search-changed", G_CALLBACK(search_entry_changed_cb), this);
+        g_signal_connect(search_entry, "stop-search", G_CALLBACK(search_entry_stop_cb), this);
+        g_signal_connect(search_entry, "activate", G_CALLBACK(search_entry_stop_cb), this);
+    }
 }

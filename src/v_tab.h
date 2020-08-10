@@ -67,6 +67,15 @@ namespace VTERM{
                 } mode;
 
                 /*
+                 * Search direction
+                 */
+                enum SearchDir{
+                    BACKWARD_SEARCH,
+
+                    FORWARD_SEARCH,
+                } search_dir;
+
+                /*
                  * Parent VTab
                  */
                 VTab* parent_vtab;
@@ -77,6 +86,11 @@ namespace VTERM{
                 GtkDrawingArea* cursor_indicator;
 
                 /*
+                 * Search bar widgets
+                 */
+                GtkSearchEntry* search_entry;
+
+                /*
                  * Static methods
                  */
                 /*
@@ -84,10 +98,19 @@ namespace VTERM{
                  */
                 static gboolean cursor_indicator_draw_cb(GtkDrawingArea* _cursor_indicator, cairo_t* cr, gpointer data);
                 static void cursor_indicator_realize_cb(GtkDrawingArea* cursor_indicator, gpointer _data);
+                static void search_entry_next_cb(GtkSearchEntry* _search_entry, gpointer data);
+                static void search_entry_prev_cb(GtkSearchEntry* _search_entry, gpointer data);
+                static void search_entry_changed_cb(GtkSearchEntry* _search_entry, gpointer data);
+                static void search_entry_stop_cb(GtkSearchEntry* _search_entry, gpointer data);
 
                 /*
                  * Non-static methods
                  */
+
+                /*
+                 * Search for text
+                 */
+                void do_search();
 
                 /*
                  * Enters insert mode
