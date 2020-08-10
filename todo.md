@@ -8,11 +8,18 @@
 [ ] Shortcuts: yank selection or line if in normal mode. 
 [ ] Shortcuts: start and hashtag command to search for word under cursor.
 
+[ ] Add summery of shortcuts in help
+
 [ ] FIX: Scroll to insert mode cursor when switching to insert mode from normal
     mode (and make this configurable).
 [ ] FIX: some colors default value should be null so that they are set to be
     swapped.
 [ ] FIX: documentation errors.
+[ ] FIX: Add search wrap around to config or as shortcut.
+[ ] FIX: Check shortcuts when capslock is set!
+
+[ ] FIX: Move vterm cursor with search. 
+[ ] FIX: make search entry BG configurable
 
 [ ] Style: Add tabs styling through css.
 
@@ -20,7 +27,8 @@
 [ ] Feature: Search for selected text in browser.
 [ ] Feature: Url mode. 
 [ ] Feature: clickable urls.
-
+[ ] Feature: Fullscreen.
+[ ] Feature: Figure out some mode indication on the screen.
 
 [ ] Motion: Go to first non-blank char.
 [ ] Motion: ctrl-d/u ctrl-b/f for half and full page movement.
