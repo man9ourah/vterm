@@ -16,13 +16,13 @@
 [ ] FIX: some colors default value should be null so that they are set to be
     swapped.
 [ ] FIX: documentation errors.
-[ ] FIX: Add search wrap around to config or as shortcut.
 [ ] FIX: Check shortcuts when capslock is set!
 
 [ ] Style: make search entry BG configurable
 [ ] Style: Add tabs styling through css.
 
 [ ] Feature: Search for selected text in browser.
+
 [ ] Feature: Url mode. 
 [ ] Feature: Figure out some mode indication on the screen (cursor color!).
 
@@ -31,6 +31,7 @@
 [ ] Motion: Move cursor to prev/next prompt.
 [ ] Motion: vim o command: swap cursor & selection start positions.
 
+[X] FIX: Add search wrap around to config or as shortcut.
 [X] Feature: Fullscreen.
 [X] Feature: clickable urls.
 [X] FIX: Move vterm cursor with search. 

@@ -160,6 +160,7 @@ namespace VTERM{
                      mouse_autohide = true,
                      enable_bidi = true,
                      enable_shaping = true,
+                     search_wrap_around = true,
                      focus_aware_color_background = false;
 
             gdouble font_scale = 1,
@@ -280,12 +281,9 @@ namespace VTERM{
                 vte_terminal_set_scroll_on_output(vte_terminal, scroll_on_output);
                 vte_terminal_set_scroll_on_keystroke(vte_terminal, scroll_on_keystroke);
                 vte_terminal_set_mouse_autohide(vte_terminal, mouse_autohide);
-
-#if VTE_CHECK_VERSION(0, 58, 0)
                 vte_terminal_set_enable_bidi(vte_terminal, enable_bidi);
                 vte_terminal_set_enable_shaping(vte_terminal, enable_shaping);
-#endif
-
+                vte_terminal_search_set_wrap_around(vte_terminal, search_wrap_around);
                 vte_terminal_set_font_scale(vte_terminal, font_scale);
                 vte_terminal_set_bold_is_bright(vte_terminal, false);
                 vte_terminal_set_cell_width_scale(vte_terminal, cell_width_scale);
@@ -433,6 +431,7 @@ namespace VTERM{
                 get_bool_or_def("behavior", "mouse_autohide", &mouse_autohide);
                 get_bool_or_def("behavior", "enable_bidi", &enable_bidi);
                 get_bool_or_def("behavior", "enable_shaping", &enable_shaping);
+                get_bool_or_def("behavior", "search_wrap_around", &search_wrap_around);
                 get_bool_or_def("behavior", "window_size_hints", &window_size_hints);
                 get_bool_or_def("behavior", "tab_label_trim_first", &tab_label_trim_first);
                 get_bool_or_def("behavior", "insert_after_current", &insert_after_current);
