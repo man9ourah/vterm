@@ -421,8 +421,8 @@ namespace VTERM{
 
         vte_terminal_vterm_cursor_selection(parent_vtab->vte_terminal, selection_type);
 
-        // Set our mode to insert
-        mode = VMode::ModeOp::VISUAL_MODE;
+        // Set our mode to visual
+        mode = visual_mode_kind;
     }
 
     void VTab::VMode::switch_mode(VMode::ModeOp new_mode){
