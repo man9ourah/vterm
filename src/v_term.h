@@ -31,7 +31,7 @@ namespace VTERM{
             /*
              * Notebook pages to vtab objects map
              */
-            map<GtkBox*, VTab*> hboxVTabMap;
+            unordered_map<GtkBox*, VTab*> hboxVTabMap;
 
             /*
              * up-to-date window size info

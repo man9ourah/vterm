@@ -4,7 +4,7 @@
 #include "common.h"
 #include "v_config.h"
 
-#include <map>
+#include <unordered_map>
 
 using namespace std;
 namespace VTERM{
@@ -59,7 +59,7 @@ namespace VTERM{
             /*
              * Map from regex tag to Regex_Desc
              */
-            map<int, Regex_Desc> regexTagMap;
+            unordered_map<int, Regex_Desc> regexTagMap;
 
             /*
              * Struct encapsulating current mode of operation
