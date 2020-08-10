@@ -18,7 +18,7 @@
 [ ] FIX: Add search wrap around to config or as shortcut.
 [ ] FIX: Check shortcuts when capslock is set!
 
-[ ] FIX: Move vterm cursor with search. 
+[X] FIX: Move vterm cursor with search. 
 [ ] FIX: make search entry BG configurable
 
 [ ] Style: Add tabs styling through css.

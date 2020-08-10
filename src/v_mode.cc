@@ -53,6 +53,9 @@ namespace VTERM{
         gtk_entry_set_icon_from_icon_name(GTK_ENTRY(vmode->search_entry),
                 GTK_ENTRY_ICON_PRIMARY, "go-down-symbolic");
 
+        gtk_entry_set_placeholder_text(GTK_ENTRY(vmode->search_entry), 
+                "Search next..");
+
         // Change our member var
         vmode->search_dir = SearchDir::FORWARD_SEARCH;
     }
@@ -66,6 +69,9 @@ namespace VTERM{
         // Change the icon
         gtk_entry_set_icon_from_icon_name(GTK_ENTRY(vmode->search_entry),
                 GTK_ENTRY_ICON_PRIMARY, "go-up-symbolic");
+
+        gtk_entry_set_placeholder_text(GTK_ENTRY(vmode->search_entry), 
+                "Search previous..");
 
         // Change our member var
         vmode->search_dir = SearchDir::BACKWARD_SEARCH;
@@ -81,8 +87,7 @@ namespace VTERM{
             vte_regex_unref(regex);
 
         // Delete selection to search from beginning
-        vte_terminal_vterm_cursor_selection(vmode->parent_vtab->vte_terminal,
-                VTermSelectionType::VTERM_SELECTION_NONE);
+        vte_terminal_unselect_all(vmode->parent_vtab->vte_terminal);
 
         // Do search
         vmode->do_search();
@@ -91,11 +96,16 @@ namespace VTERM{
     void VTab::VMode::search_entry_stop_cb(GtkSearchEntry* _search_entry, gpointer data){
         VMode* vmode = (VMode*)data;
 
-        // Then hide the search widget
+        // Hide the search widget
         gtk_widget_hide(GTK_WIDGET(vmode->search_entry));
 
         // Give focus to terminal
         gtk_widget_grab_focus(GTK_WIDGET(vmode->parent_vtab->vte_terminal));
+    }
+    
+    gboolean search_entry_focus_out_cb(GtkSearchEntry* search_entry, GdkEvent  *event, gpointer data){
+        VTab::VMode::search_entry_stop_cb(search_entry, data);
+        return false;
     }
 
     void VTab::VMode::do_search(){
@@ -103,12 +113,18 @@ namespace VTERM{
             case BACKWARD_SEARCH:{
                 DEBUG_PRINT("BACKWARD_SEARCH\n");
                 vte_terminal_search_find_previous(parent_vtab->vte_terminal);
+
+                // The cursor will move after search 
+                gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                 break;
             }
 
             case FORWARD_SEARCH:{
                 DEBUG_PRINT("FORWARD_SEARCH\n");
                 vte_terminal_search_find_next(parent_vtab->vte_terminal);
+
+                // The cursor will move after search 
+                gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                 break;
             }
         }
@@ -574,5 +590,6 @@ namespace VTERM{
         g_signal_connect(search_entry, "search-changed", G_CALLBACK(search_entry_changed_cb), this);
         g_signal_connect(search_entry, "stop-search", G_CALLBACK(search_entry_stop_cb), this);
         g_signal_connect(search_entry, "activate", G_CALLBACK(search_entry_stop_cb), this);
+        g_signal_connect(search_entry, "focus-out-event", G_CALLBACK(search_entry_focus_out_cb), this);
     }
 }
