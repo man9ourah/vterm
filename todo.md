@@ -24,7 +24,6 @@
 
 [ ] Feature: Search for selected text in browser.
 [ ] Feature: Url mode. 
-[ ] Feature: Fullscreen.
 [ ] Feature: Figure out some mode indication on the screen (cursor color!).
 
 [ ] Motion: Go to first non-blank char.
@@ -32,6 +31,7 @@
 [ ] Motion: Move cursor to prev/next prompt.
 [ ] Motion: vim o command: swap cursor & selection start positions.
 
+[X] Feature: Fullscreen.
 [X] Feature: clickable urls.
 [X] FIX: Move vterm cursor with search. 
 [X] Feature: Search in terminal.
