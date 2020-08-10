@@ -142,6 +142,27 @@ namespace VTERM{
             }
         }
 
+        if(!modifiers){
+            switch(keypressed){
+
+                /*
+                 * Fullscreen
+                 */
+                case GDK_KEY_F11:{
+                    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(vterm->window));
+                    if(gdk_window_get_state(window) & GDK_WINDOW_STATE_FULLSCREEN){
+                        // We already in fullscreen, unfullscreen
+                        gtk_window_unfullscreen(vterm->window);
+                    }else{
+                        // We are not in fullscreen, fullscreen
+                        gtk_window_fullscreen(vterm->window);
+                    }
+                    return true;
+                }
+
+            }
+        }
+
         return false;
     }
 
