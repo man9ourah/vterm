@@ -17,7 +17,7 @@ project(
 gtkdep = dependency('gtk+-3.0')
 
 # our custom vte
-libvte_proj = subproject('vte')
+libvte_proj = subproject('vte-vterm')
 libvte_dep = libvte_proj.get_variable('libvte_gtk3_static_dep')
 
 # sources in our project

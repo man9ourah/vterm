@@ -1,0 +1,3 @@
+[submodule "subprojects/vte-vterm"]
+	path = subprojects/vte-vterm
+	url = git@github.com:man9ourah/vte-vterm.git
