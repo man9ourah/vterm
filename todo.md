@@ -11,6 +11,7 @@
 [ ] FIX: some colors default value should be null so that they are set to be
     swapped.
 [ ] FIX: documentation errors.
+[ ] FIX: Change submodule url to http instead.
 
 [ ] Style: make search entry BG configurable
 [ ] Style: Add tabs styling through css.
