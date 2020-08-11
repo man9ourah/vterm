@@ -132,7 +132,7 @@ namespace VTERM{
 
     gboolean VTab::VMode::handle_keyboard_events(GdkEventKey* event){
         const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
-        const guint keypressed = gdk_keyval_to_lower(event->keyval);
+        const guint keypressed = event->keyval;
 
         /*
          * Now to the keybindings that are specific to certain modes
@@ -147,199 +147,217 @@ namespace VTERM{
             case VMode::ModeOp::NORMAL_MODE:{
                 if(modifiers == GDK_SHIFT_MASK){
                     switch(keypressed){
-                        case GDK_KEY_h:
-                        case GDK_KEY_H:{
-                            DEBUG_PRINT("\nVTermCursor:  top\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::TOP);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_l:
-                        case GDK_KEY_L:{
-                            DEBUG_PRINT("\nVTermCursor:  bottom\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::BOTTOM);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_m:
-                        case GDK_KEY_M:{
-                            DEBUG_PRINT("\nVTermCursor:  middle\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::MIDDLE);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_w:
-                        case GDK_KEY_W:{
+                        case GDK_KEY_Right:{
                             DEBUG_PRINT("\nVTermCursor:  right statement\n");
                             vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_STMT);
                             gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                             return true;
                         }
 
-                        case GDK_KEY_b:
-                        case GDK_KEY_B:{
+                        case GDK_KEY_Left:{
                             DEBUG_PRINT("\nVTermCursor:  left statement\n");
                             vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::LEFT_STMT);
                             gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                             return true;
                         }
-
-                        case GDK_KEY_e:
-                        case GDK_KEY_E:{
-                            DEBUG_PRINT("\nVTermCursor:  end right statement\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_STMT_END);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_dollar:{
-                            DEBUG_PRINT("\nVTermCursor:  eol\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::EOL);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_V:
-                        case GDK_KEY_v:{
-                            switch_mode(VMode::ModeOp::VISUAL_LINE_MODE);
-                            return true;
-                        }
-
-                        case GDK_KEY_n:
-                        case GDK_KEY_N:{
-                            search_entry_prev_cb(search_entry, this);
-                            do_search();
-                            return true;
-                        }
-
-                        case GDK_KEY_question:{
-                            // Show the widget
-                            gtk_widget_show(GTK_WIDGET(search_entry));
-
-                            // Give focus to search widget
-                            gtk_widget_grab_focus(GTK_WIDGET(search_entry));
-
-                            // Start forward search
-                            search_entry_prev_cb(search_entry, this);
-                            return true;
-                        }
                     }
                 }else if(modifiers == GDK_CONTROL_MASK){
                     switch(keypressed){
-                        case GDK_KEY_v:{
-                            switch_mode(VMode::ModeOp::VISUAL_BLOCK_MODE);
-                            return true;
-                        }
-                    }
-                }else{
-                    switch(keypressed){
-                        case GDK_KEY_k:
-                        case GDK_KEY_Up:{
-                            DEBUG_PRINT("\nVTermCursor:  up\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::UP);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_j:
-                        case GDK_KEY_Down:{
-                            DEBUG_PRINT("\nVTermCursor:  down\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::DOWN);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_h:
-                        case GDK_KEY_Left:{
-                            DEBUG_PRINT("\nVTermCursor:  left\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::LEFT);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_l:
                         case GDK_KEY_Right:{
-                            DEBUG_PRINT("\nVTermCursor:  right\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_0:
-                        case GDK_KEY_KP_0:
-                        case GDK_KEY_Home:{
-                            DEBUG_PRINT("\nVTermCursor:  bol\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::BOL);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_dollar:
-                        case GDK_KEY_End:{
-                            DEBUG_PRINT("\nVTermCursor:  eol\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::EOL);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_w:{
                             DEBUG_PRINT("\nVTermCursor:  right word\n");
                             vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_WORD);
                             gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                             return true;
                         }
 
-                        case GDK_KEY_b:{
+                        case GDK_KEY_Left:{
                             DEBUG_PRINT("\nVTermCursor:  left word\n");
                             vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::LEFT_WORD);
                             gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                             return true;
                         }
 
-                        case GDK_KEY_e:{
-                            DEBUG_PRINT("\nVTermCursor:  end right word\n");
-                            vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_WORD_END);
-                            gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                            return true;
-                        }
-
-                        case GDK_KEY_slash:{
-                            // Show the widget
-                            gtk_widget_show(GTK_WIDGET(search_entry));
-
-                            // Give focus to search widget
-                            gtk_widget_grab_focus(GTK_WIDGET(search_entry));
-
-                            // Start forward search
-                            search_entry_next_cb(search_entry, this);
-                            return true;
-                        }
-
-                        case GDK_KEY_question:{
-                            // Show the widget
-                            gtk_widget_show(GTK_WIDGET(search_entry));
-
-                            // Give focus to search widget
-                            gtk_widget_grab_focus(GTK_WIDGET(search_entry));
-
-                            // Start forward search
-                            search_entry_prev_cb(search_entry, this);
-                            return true;
-                        }
-
-                        case GDK_KEY_n:{
-                            search_entry_next_cb(search_entry, this);
-                            do_search();
-                            return true;
-                        }
-
                         case GDK_KEY_v:{
-                            switch_mode(VMode::ModeOp::VISUAL_MODE);
+                            switch_mode(VMode::ModeOp::VISUAL_BLOCK_MODE);
                             return true;
                         }
+                    }
+                }
+
+                switch(keypressed){
+                    case GDK_KEY_q:
+                    case GDK_KEY_Escape:{
+                        // This single line will put us to normal mode if we are
+                        // in visual mode, and in insert mode if we are in
+                        // normal mode!! Good design!
+                        switch_mode(VMode::ModeOp::NORMAL_MODE);
+                        return true;
+                    }
+
+                    case GDK_KEY_H:{
+                        DEBUG_PRINT("\nVTermCursor:  top\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::TOP);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_L:{
+                        DEBUG_PRINT("\nVTermCursor:  bottom\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::BOTTOM);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_M:{
+                        DEBUG_PRINT("\nVTermCursor:  middle\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::MIDDLE);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_W:{
+                        DEBUG_PRINT("\nVTermCursor:  right statement\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_STMT);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_B:{
+                        DEBUG_PRINT("\nVTermCursor:  left statement\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::LEFT_STMT);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_E:{
+                        DEBUG_PRINT("\nVTermCursor:  end right statement\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_STMT_END);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_w:{
+                        DEBUG_PRINT("\nVTermCursor:  right word\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_WORD);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_b:{
+                        DEBUG_PRINT("\nVTermCursor:  left word\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::LEFT_WORD);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_e:{
+                        DEBUG_PRINT("\nVTermCursor:  end right word\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_WORD_END);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_k:
+                    case GDK_KEY_Up:{
+                        DEBUG_PRINT("\nVTermCursor:  up\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::UP);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_j:
+                    case GDK_KEY_Down:{
+                        DEBUG_PRINT("\nVTermCursor:  down\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::DOWN);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_h:
+                    case GDK_KEY_Left:{
+                        DEBUG_PRINT("\nVTermCursor:  left\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::LEFT);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_l:
+                    case GDK_KEY_Right:{
+                        DEBUG_PRINT("\nVTermCursor:  right\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_0:
+                    case GDK_KEY_KP_0:
+                    case GDK_KEY_Home:{
+                        DEBUG_PRINT("\nVTermCursor:  bol\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::BOL);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_dollar:
+                    case GDK_KEY_End:{
+                        DEBUG_PRINT("\nVTermCursor:  eol\n");
+                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::EOL);
+                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                        return true;
+                    }
+
+                    case GDK_KEY_slash:{
+                        // Show the widget
+                        gtk_widget_show(GTK_WIDGET(search_entry));
+
+                        // Give focus to search widget
+                        gtk_widget_grab_focus(GTK_WIDGET(search_entry));
+
+                        // Start forward search
+                        search_entry_next_cb(search_entry, this);
+                        return true;
+                    }
+
+                    case GDK_KEY_question:{
+                        // Show the widget
+                        gtk_widget_show(GTK_WIDGET(search_entry));
+
+                        // Give focus to search widget
+                        gtk_widget_grab_focus(GTK_WIDGET(search_entry));
+
+                        // Start backword search
+                        search_entry_prev_cb(search_entry, this);
+                        return true;
+                    }
+
+                    case GDK_KEY_n:{
+                        search_entry_next_cb(search_entry, this);
+                        do_search();
+                        return true;
+                    }
+
+                    case GDK_KEY_v:{
+                        switch_mode(VMode::ModeOp::VISUAL_MODE);
+                        return true;
+                    }
+
+                    case GDK_KEY_V:{
+                        switch_mode(VMode::ModeOp::VISUAL_LINE_MODE);
+                        return true;
+                    }
+
+                    case GDK_KEY_N:{
+                        search_entry_prev_cb(search_entry, this);
+                        do_search();
+                        return true;
+                    }
+
+                    case GDK_KEY_y:{
+                        vte_terminal_copy_clipboard_format(parent_vtab->vte_terminal, VTE_FORMAT_TEXT);
+                        // Exit visual mode after yank like vim
+                        if(mode != VMode::ModeOp::NORMAL_MODE)
+                            switch_mode(VMode::ModeOp::NORMAL_MODE);
+                        return true;
                     }
                 }
 
@@ -426,8 +444,8 @@ namespace VTERM{
     }
 
     void VTab::VMode::enter_visual_mode(ModeOp visual_mode_kind){
-        // We have to be already in normal mode!
-        g_assert(mode == VMode::ModeOp::NORMAL_MODE);
+        // We have to be already in normal mode or one of the visual modes
+        g_assert(mode != VMode::ModeOp::INSERT_MODE);
 
         VTermSelectionType selection_type = VTERM_CHAR_SELECTION;
         if(visual_mode_kind == VISUAL_LINE_MODE)
@@ -487,7 +505,13 @@ namespace VTERM{
                      */
                     case VMode::ModeOp::VISUAL_MODE:
                     case VMode::ModeOp::VISUAL_LINE_MODE:
-                    case VMode::ModeOp::VISUAL_BLOCK_MODE:
+                    case VMode::ModeOp::VISUAL_BLOCK_MODE:{
+                        // No toggle, but switch between different kinds
+                        if(new_mode != mode)
+                            enter_visual_mode(new_mode);
+                        break;
+                    }
+
                     case VMode::ModeOp::NORMAL_MODE:{
                         DEBUG_PRINT("\nmode: VISUAL->NORMAL\n");
                         enter_normal_mode();

@@ -62,6 +62,13 @@
 #define VKEY_TOGGLE_NORMAL GDK_KEY_space
 
 /*
+ * Switch to visual mode
+ * (WITH_MODIFIER)
+ */
+#define VKEY_SWITCH_VISUAL_LEFT GDK_KEY_Left
+#define VKEY_SWITCH_VISUAL_RIGHT GDK_KEY_Right
+
+/*
  * Close tab
  * (WITH_MODIFIER)
  */

@@ -77,6 +77,41 @@ namespace VTERM{
                 }
 
                 /*
+                 * Switch to visual mode
+                 */
+                case VKEY_SWITCH_VISUAL_LEFT:
+                case VKEY_SWITCH_VISUAL_RIGHT:{
+                    vtab->current_mode->switch_mode(VMode::ModeOp::VISUAL_MODE);
+                    // Pass to vmode to move cursor left/right
+                    vtab->current_mode->handle_keyboard_events(event);
+                    return true;
+                }
+
+                /*
+                 * Backward search
+                 */
+                case GDK_KEY_question:{
+                    // Show the widget
+                    gtk_widget_show(GTK_WIDGET(vtab->current_mode->search_entry));
+
+                    // Give focus to search widget
+                    gtk_widget_grab_focus(GTK_WIDGET(vtab->current_mode->search_entry));
+
+                    // Start backward search
+                    VMode::search_entry_prev_cb(vtab->current_mode->search_entry, vtab->current_mode);
+                    return true;
+                }
+
+                /*
+                 * Backward search find prev
+                 */
+                case GDK_KEY_n:{
+                    VMode::search_entry_prev_cb(vtab->current_mode->search_entry, vtab->current_mode);
+                    vtab->current_mode->do_search();
+                    return true;
+                }
+
+                /*
                  * Close this tab
                  */
                 case VKEY_CLOSE_TAB:{
@@ -140,7 +175,7 @@ namespace VTERM{
                 }
 
                 /*
-                 * Standard zoom in keybinding
+                 * Standard zoom-in keybinding
                  */
                 case GDK_KEY_plus:{
                     vte_terminal_set_font_scale(vte_terminal,
@@ -157,7 +192,7 @@ namespace VTERM{
         }else if(modifiers == GDK_CONTROL_MASK){
             switch(keypressed){
                 /*
-                 * Standard zoom in keybinding
+                 * Standard zoom-in keybinding
                  */
                 case GDK_KEY_KP_Add:{
                     vte_terminal_set_font_scale(vte_terminal,
@@ -167,7 +202,7 @@ namespace VTERM{
                 }
 
                 /*
-                 * Standard zoom out keybinding
+                 * Standard zoom-out keybinding
                  */
                 case GDK_KEY_minus:
                 case GDK_KEY_KP_Subtract:{
