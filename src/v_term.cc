@@ -219,8 +219,9 @@ namespace VTERM{
         // might have added/deleted the tabs bar
         vterm->window_set_size();
 
-        // Give focus to terminal widget
-        gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
+        // Give focus to terminal widget if it is already realized
+        if(gtk_widget_get_realized(GTK_WIDGET(vtab->vte_terminal)))
+            gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
     }
 
     void VTerm::window_update_geometry(VTab* vtab){
@@ -341,7 +342,7 @@ namespace VTERM{
         // TODO:: Maybe make this configurable
         gtk_container_child_set(GTK_CONTAINER(notebook), GTK_WIDGET(hbox),
                 "tab-fill", true,
-                "tab-expand", true, nullptr);
+                "tab-expand", false, nullptr);
 
         // Give focus to terminal
         gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
