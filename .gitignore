@@ -1,3 +1,4 @@
 # ignore build dir
 build/
 .ycm*
+compile_commands.json
