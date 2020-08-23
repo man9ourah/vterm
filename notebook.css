@@ -1,4 +1,5 @@
-@define-color  tab_bg_color darker(#3f3f45);
+@define-color  tab_bg_color darker(#1a1c1e);
+/* @define-color  tab_bg_color darker(#3f3f45); */
 @define-color  checked_tab_bg_color darker(darker(#00b0ff));
 @define-color  fg_color #fcfcfc;
 
