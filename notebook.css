@@ -1,0 +1,75 @@
+@define-color  tab_bg_color darker(#3f3f45);
+@define-color  checked_tab_bg_color darker(darker(#00b0ff));
+@define-color  fg_color #fcfcfc;
+
+notebook header{
+    /* No wasted space */
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+    min-height: 0;
+    min-width: 0;
+
+    /* No borders for header */
+    border: 0 ;
+
+    /* header background */
+    background-color: @tab_bg_color;
+}
+
+notebook arrow {
+    /* No wasted space */
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+    min-height: 0;
+    min-width: 0;
+
+    background-color: @tab_bg_color;
+    color: @fg_color;
+}
+
+notebook arrow:disabled{
+    color: darker(darker(@fg_color));
+}
+
+notebook > header > tabs > arrow.down{
+    /* this is to snap arrow buttons to the edgs */
+    margin-left: -8px;
+    -gtk-icon-source: -gtk-icontheme("pan-start-symbolic");
+}
+
+notebook > header > tabs > arrow.up{
+    /* this is to snap arrow buttons to the edgs */
+    margin-right: -8px;
+    -gtk-icon-source: -gtk-icontheme("pan-end-symbolic");
+
+    /* this is to hide the right border of the leftmost tab */
+    margin-left: -1px;
+    border-width: 0px 0px 0 1px;
+    border-style: solid;
+    border-color: @tab_bg_color; 
+}
+
+/* Style all tabs */
+notebook tab {
+    /* negative left margin to overlab borders */;
+    margin: 0px 0 0 -1px;
+    padding: 3px 3px 3px 3px;
+    min-height: 0;
+    min-width: 0;
+
+    background-color: @tab_bg_color;
+
+    border-image: none;
+    border-width: 0px 1px 0 1px;
+    border-style: solid;
+    border-color: @fg_color; 
+
+    color: @fg_color; 
+
+    font: UbuntuMono Nerd Font Mono 12;
+}
+
+/* Style active tab */
+notebook tab:checked {
+    background-color: @checked_tab_bg_color;
+}
