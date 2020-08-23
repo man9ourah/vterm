@@ -365,7 +365,8 @@ namespace VTERM{
                                         PANGO_ELLIPSIZE_START :
                                         PANGO_ELLIPSIZE_END);
 
-        gtk_label_set_width_chars(tab_label, 15);
+        // TODO: Make width configurable
+        gtk_label_set_width_chars(tab_label, 20);
     }
 
     VTab::VTab(VTerm* vterm, gchar* cwd, gchar** cmd, gchar** env): vterm(vterm){

@@ -69,6 +69,11 @@ namespace VTERM{
              */
 
             /*
+             * Style notebook
+             */
+            void notebook_style();
+
+            /*
              * Updates the window's geometry hints to the WM
              */
             void window_update_geometry(VTab* vtab);

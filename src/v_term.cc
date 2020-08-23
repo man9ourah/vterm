@@ -1,4 +1,5 @@
 #include "v_term.h"
+#include "gtk/gtkcssprovider.h"
 #include "v_config.h"
 #include "v_tab.h"
 #include "v_keybindings.h"
@@ -224,6 +225,16 @@ namespace VTERM{
             gtk_widget_grab_focus(GTK_WIDGET(vtab->vte_terminal));
     }
 
+    void VTerm::notebook_style(){
+        // TODO:: Polish and make it configurable
+        GtkStyleContext* st_cntxt = gtk_widget_get_style_context(GTK_WIDGET(notebook));
+        GtkCssProvider* css_provider = gtk_css_provider_new();
+        GFile* css_file = g_file_new_for_path("/usr/local/src/vterm/notebook.css");
+        gtk_css_provider_load_from_file(css_provider, css_file, nullptr);
+
+        gtk_style_context_add_provider(st_cntxt, GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    }
+
     void VTerm::window_update_geometry(VTab* vtab){
         DEBUG_PRINT("\nWINDOW_SIZE: Updating window geometry..\n");
         /*
@@ -416,6 +427,9 @@ namespace VTERM{
 
         // Connect widgets signals
         connect_signals();
+
+        // Style our notebook
+        notebook_style();
 
         // Finally, add notebook to window
         gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(notebook));
