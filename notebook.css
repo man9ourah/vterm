@@ -54,7 +54,7 @@ notebook > header > tabs > arrow.up{
 notebook tab {
     /* negative left margin to overlab borders */;
     margin: 0px 0 0 -1px;
-    padding: 3px 3px 3px 3px;
+    padding: 3px 5px 3px 5px;
     min-height: 0;
     min-width: 0;
 
@@ -67,7 +67,7 @@ notebook tab {
 
     color: @fg_color; 
 
-    font: UbuntuMono Nerd Font Mono 12;
+    font: 12px UbuntuMono Nerd Font Mono;
 }
 
 /* Style active tab */
