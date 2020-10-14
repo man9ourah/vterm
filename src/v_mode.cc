@@ -38,7 +38,7 @@ namespace VTERM{
 
     void VTab::VMode::cursor_indicator_realize_cb(GtkDrawingArea* cursor_indicator, gpointer _data){
         // Drawing area has its own gdk window, we have to set it manually to be pass
-        // through 
+        // through
         GdkWindow* gdkwindow = gtk_widget_get_window(GTK_WIDGET(cursor_indicator));
         gdk_window_set_pass_through(gdkwindow, true);
     }
@@ -53,7 +53,7 @@ namespace VTERM{
         gtk_entry_set_icon_from_icon_name(GTK_ENTRY(vmode->search_entry),
                 GTK_ENTRY_ICON_PRIMARY, "go-down-symbolic");
 
-        gtk_entry_set_placeholder_text(GTK_ENTRY(vmode->search_entry), 
+        gtk_entry_set_placeholder_text(GTK_ENTRY(vmode->search_entry),
                 "Search next..");
 
         // Change our member var
@@ -70,7 +70,7 @@ namespace VTERM{
         gtk_entry_set_icon_from_icon_name(GTK_ENTRY(vmode->search_entry),
                 GTK_ENTRY_ICON_PRIMARY, "go-up-symbolic");
 
-        gtk_entry_set_placeholder_text(GTK_ENTRY(vmode->search_entry), 
+        gtk_entry_set_placeholder_text(GTK_ENTRY(vmode->search_entry),
                 "Search previous..");
 
         // Change our member var
@@ -102,7 +102,7 @@ namespace VTERM{
         // Give focus to terminal
         gtk_widget_grab_focus(GTK_WIDGET(vmode->parent_vtab->vte_terminal));
     }
-    
+
     gboolean search_entry_focus_out_cb(GtkSearchEntry* search_entry, GdkEvent  *event, gpointer data){
         VTab::VMode::search_entry_stop_cb(search_entry, data);
         return false;
@@ -114,7 +114,7 @@ namespace VTERM{
                 DEBUG_PRINT("BACKWARD_SEARCH\n");
                 vte_terminal_search_find_previous(parent_vtab->vte_terminal);
 
-                // The cursor will move after search 
+                // The cursor will move after search
                 gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                 break;
             }
@@ -123,7 +123,7 @@ namespace VTERM{
                 DEBUG_PRINT("FORWARD_SEARCH\n");
                 vte_terminal_search_find_next(parent_vtab->vte_terminal);
 
-                // The cursor will move after search 
+                // The cursor will move after search
                 gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
                 break;
             }
@@ -429,7 +429,7 @@ namespace VTERM{
         // Reverse: Dont scroll on keystroke or output
         vte_terminal_set_scroll_on_keystroke(parent_vtab->vte_terminal, VConf(scroll_on_output));
         vte_terminal_set_scroll_on_output(parent_vtab->vte_terminal, VConf(scroll_on_keystroke));
-        
+
         // Reverse: Signal that we hiding vterm's cursor so that the other cursor is
         // shown
         vte_terminal_vterm_cursor_set_shown(parent_vtab->vte_terminal, false);
