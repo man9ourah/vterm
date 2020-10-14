@@ -1,5 +1,5 @@
-@define-color  tab_bg_color darker(#3f3f45);
-@define-color  checked_tab_bg_color darker(darker(#00b0ff));
+@define-color  tab_bg_color #28282B;
+@define-color  checked_tab_bg_color #005880;
 @define-color  fg_color #fcfcfc;
 
 notebook header{
@@ -53,7 +53,7 @@ notebook > header > tabs > arrow.up{
 notebook tab {
     /* negative left margin to overlab borders */;
     margin: 0px 0 0 -1px;
-    padding: 3px 5px 3px 5px;
+    padding: 2px 5px 2px 5px;
     min-height: 0;
     min-width: 0;
 
@@ -66,7 +66,7 @@ notebook tab {
 
     color: @fg_color; 
 
-    font: 12px UbuntuMono Nerd Font Mono;
+    font: 12px Hack;
 }
 
 /* Style active tab */

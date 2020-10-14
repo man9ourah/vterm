@@ -312,8 +312,11 @@ namespace VTERM{
         // Not doing this to maximized or tiled windows
         GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
         if (gdk_window != NULL && (gdk_window_get_state(gdk_window) &
-            (GDK_WINDOW_STATE_MAXIMIZED | GDK_WINDOW_STATE_TILED | GDK_WINDOW_STATE_FULLSCREEN)))
+            (GDK_WINDOW_STATE_MAXIMIZED | GDK_WINDOW_STATE_TILED | GDK_WINDOW_STATE_FULLSCREEN))){
+
+            DEBUG_PRINT("Not resizing window\n");
             return;
+        }
 
         // If we have been realized.. resize.
         if(window_width_cache > 0 && window_height_cache > 0){
