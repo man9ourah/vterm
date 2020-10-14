@@ -14,12 +14,15 @@
 [ ] FIX: Change submodule url to http instead.
 
 [ ] Style: make search entry BG configurable
+[ ] Style: Make it clear if no search results
 [ ] Style: Add tabs styling through css.
+[ ] Style: Add official icon and .desktop shortcut
 
 [ ] Feature: Search for selected text in browser.
 [ ] Feature: modifyOtherKeys.
 [ ] Feature: Url mode. 
-[ ] Feature: Figure out some mode indication on the screen (cursor color!).
+[ ] Feature: Figure out some mode indication on the screen: cursor color, or
+    active-tab color.
 
 [ ] Motion: Go to first non-blank char.
 [ ] Motion: ctrl-d/u ctrl-b/f for half and full page movement.
