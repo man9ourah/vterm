@@ -3,7 +3,6 @@
 - [ ] Shortcuts: Make keyboard shortcuts configurable from vconfig.
 - [ ] Shortcuts: yank line/word (configurable) if in normal mode.
 - [ ] Shortcuts: star and hashtag command to search for word under cursor.
-- [ ] Shortcuts: Enter key to exit normal/visual mode.
 
 - [ ] Add summery of shortcuts in help
 
@@ -28,6 +27,7 @@
 - [ ] Motion: Move cursor to prev/next prompt.
 - [ ] Motion: vim o command: swap cursor & selection start positions.
 
+- [X] Shortcuts: Enter key to exit normal/visual mode.
 - [X] FIX: some colors default value should be null so that they are set to be
     swapped.
 - [X] FIX: Check shortcuts when capslock is set!

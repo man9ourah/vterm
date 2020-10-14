@@ -186,6 +186,7 @@ namespace VTERM{
 
                 switch(keypressed){
                     case GDK_KEY_q:
+                    case GDK_KEY_Return:
                     case GDK_KEY_Escape:{
                         // This single line will put us to normal mode if we are
                         // in visual mode, and in insert mode if we are in
