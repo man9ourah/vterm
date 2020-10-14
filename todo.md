@@ -8,8 +8,6 @@
 
 [ ] FIX: Scroll to insert mode cursor when switching to insert mode from normal
     mode (and make this configurable).
-[ ] FIX: some colors default value should be null so that they are set to be
-    swapped.
 [ ] FIX: documentation errors.
 [ ] FIX: Change submodule url to http instead.
 
@@ -29,6 +27,8 @@
 [ ] Motion: Move cursor to prev/next prompt.
 [ ] Motion: vim o command: swap cursor & selection start positions.
 
+[X] FIX: some colors default value should be null so that they are set to be
+    swapped.
 [X] FIX: Check shortcuts when capslock is set!
 [X] Shortcuts: yank selection
 [X] Shortcuts: Better shortcut to enter/exit visual modes and normal mode.

@@ -3,6 +3,7 @@
 #include "vte/vte.h"
 #include "common.h"
 
+#include <optional>
 #include <pango/pango-font.h>
 #include <array>
 
@@ -87,6 +88,16 @@ using namespace std;
                                     if(!is_gerror(#key)){ \
                                         key = temp_##key; \
                                     }
+
+/*
+ * Check and set the vte color
+ */
+#define SET_VTE_COLOR(vte_terminal, color) if(color) vte_terminal_set_##color(vte_terminal, &*color)
+
+/*
+ * Check and get the vte color
+ */
+#define GET_VTE_COLOR(key) if(get_color_or_def(#key, &temp)) key = optional<GdkRGBA>(temp)
 
 namespace VTERM{
     /*
@@ -175,7 +186,7 @@ namespace VTERM{
 
             PangoFontDescription* font = pango_font_description_from_string("Monospace Normal 12");
 
-            GdkRGBA color_bold,
+            optional<GdkRGBA> color_bold,
                     color_foreground,
                     color_background,
                     focus_out_color_background,
@@ -247,18 +258,24 @@ namespace VTERM{
             void apply_window_config(GtkWindow* window){
                 if(window_title)
                     gtk_window_set_title(window, window_title);
+
                 if(window_role)
                     gtk_window_set_role(window, window_role);
-                if(color_background_transparency > 0){
+
+                if(color_background_transparency > 0 &&
+                        color_background){
                     gtk_widget_set_app_paintable(GTK_WIDGET(window), true);
-                    color_background.alpha = double(100 - CLAMP(
+                    (*color_background).alpha = double(100 - CLAMP(
                                 color_background_transparency, 0, 100)) / 100.0;
                 }
-                if(focus_out_color_background_transparency > 0){
+
+                if(focus_out_color_background_transparency > 0 &&
+                        focus_out_color_background){
                     gtk_widget_set_app_paintable(GTK_WIDGET(window), true);
-                    focus_out_color_background.alpha = double(100 - CLAMP(
+                    (*focus_out_color_background).alpha = double(100 - CLAMP(
                                 focus_out_color_background_transparency, 0, 100)) / 100.0;
                 }
+
             }
 
             /*
@@ -291,19 +308,19 @@ namespace VTERM{
                 vte_terminal_set_word_char_exceptions(vte_terminal, word_char_exceptions);
                 vte_terminal_set_scrollback_lines(vte_terminal, scrollback_lines);
                 vte_terminal_set_font(vte_terminal, font);
-                vte_terminal_set_colors(vte_terminal, &color_foreground,
-                        &color_background, palette.data(), palette.size());
-                vte_terminal_set_color_bold(vte_terminal, &color_bold);
-                vte_terminal_set_color_foreground(vte_terminal, &color_foreground);
-                vte_terminal_set_color_background(vte_terminal, &color_background);
-                vte_terminal_set_color_cursor(vte_terminal, &color_cursor);
-                vte_terminal_set_color_cursor_foreground(vte_terminal, &color_cursor_foreground);
-                vte_terminal_set_color_highlight(vte_terminal, &color_highlight);
-                vte_terminal_set_color_highlight_foreground(vte_terminal, &color_highlight_foreground);
+                vte_terminal_set_colors(vte_terminal, nullptr,
+                        nullptr, palette.data(), palette.size());
                 vte_terminal_set_cursor_shape(vte_terminal, cursor_shape);
                 vte_terminal_set_cursor_blink_mode(vte_terminal, cursor_blink_mode);
                 vte_terminal_set_backspace_binding(vte_terminal, backspace_binding);
                 vte_terminal_set_delete_binding(vte_terminal, delete_binding);
+                SET_VTE_COLOR(vte_terminal, color_bold);
+                SET_VTE_COLOR(vte_terminal, color_foreground);
+                SET_VTE_COLOR(vte_terminal, color_background);
+                SET_VTE_COLOR(vte_terminal, color_cursor);
+                SET_VTE_COLOR(vte_terminal, color_cursor_foreground);
+                SET_VTE_COLOR(vte_terminal, color_highlight);
+                SET_VTE_COLOR(vte_terminal, color_highlight_foreground);
             }
 
             /*
@@ -411,14 +428,16 @@ namespace VTERM{
                 // Gets a color, or keep the default if key does not exist
                 auto get_color_or_def = [&](const gchar *key, GdkRGBA* def){
                     gchar* rgba_string =  g_key_file_get_string(config, "style", key, &gerror);
-                    if(!is_gerror(key)){
-                        if(!gdk_rgba_parse(def, rgba_string)){
-                            g_printerr("Error parsing color \"%s\"\n", rgba_string);
-                        }
-                        g_free(rgba_string);
+                    if(is_gerror(key))
+                        return false;
+                    bool success = gdk_rgba_parse(def, rgba_string);
+                    g_free(rgba_string);
+                    if(success){
+                        return true;
                     }
+                    g_printerr("Error parsing color \"%s\"\n", key);
+                    return false;
                 };
-
 
                 /*
                  * Section [behavior]
@@ -498,14 +517,18 @@ namespace VTERM{
                         "ibeam", VTE_CURSOR_SHAPE_IBEAM,
                         "underline", VTE_CURSOR_SHAPE_UNDERLINE)
 
-                get_color_or_def("color_bold", &color_bold);
-                get_color_or_def("color_foreground", &color_foreground);
-                get_color_or_def("color_background", &color_background);
-                get_color_or_def("focus_out_color_background", &focus_out_color_background);
-                get_color_or_def("color_cursor", &color_cursor);
-                get_color_or_def("color_cursor_foreground", &color_cursor_foreground);
-                get_color_or_def("color_highlight", &color_highlight);
-                get_color_or_def("color_highlight_foreground", &color_highlight_foreground);
+                // Can be reused everytime, as the struct is copied into
+                // optional by value
+                GdkRGBA temp;
+
+                GET_VTE_COLOR(color_bold);
+                GET_VTE_COLOR(color_foreground);
+                GET_VTE_COLOR(color_background);
+                GET_VTE_COLOR(focus_out_color_background);
+                GET_VTE_COLOR(color_cursor);
+                GET_VTE_COLOR(color_cursor_foreground);
+                GET_VTE_COLOR(color_highlight);
+                GET_VTE_COLOR(color_highlight_foreground);
 
                 gchar color_key[] = "color000";
                 for(gint i = 0; i < 256; i++){
@@ -531,16 +554,6 @@ namespace VTERM{
              * Builds the default style for vterm
              */
             void build_default_style(){
-                // Colors
-                gdk_rgba_parse(&color_bold, "#f8f8f2");
-                gdk_rgba_parse(&color_foreground, "#f8f8f2");
-                gdk_rgba_parse(&color_background, "#282a36");
-                gdk_rgba_parse(&focus_out_color_background, "#282a36");
-                gdk_rgba_parse(&color_cursor, "#f8f8f2");
-                gdk_rgba_parse(&color_cursor_foreground, "#000000");
-                gdk_rgba_parse(&color_highlight, "#f8f8f2");
-                gdk_rgba_parse(&color_highlight_foreground, "#282a36");
-
                 // Dracula theme (palette 0-15)
                 gdk_rgba_parse(&palette[0],  "#ffffff");
                 gdk_rgba_parse(&palette[8],  "#4d4d4d");

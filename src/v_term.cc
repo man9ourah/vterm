@@ -20,10 +20,17 @@ namespace VTERM{
         GdkEventFocus* fe = (GdkEventFocus*)event;
         if(VTab* current_tab = vterm->getCurrentVTab()){
             VteTerminal* current_vte_terminal = VTE_TERMINAL(current_tab->vte_terminal);
-            if(fe->in)
-                vte_terminal_set_color_background(current_vte_terminal, &VConf(color_background));
-            else
-                vte_terminal_set_color_background(current_vte_terminal, &VConf(focus_out_color_background));
+            if(fe->in){
+                if(VConf(color_background).has_value()) {
+                    DEBUG_PRINT("Changing BG color to focus in");
+                    vte_terminal_set_color_background(current_vte_terminal, &*VConf(color_background));
+                }
+            }else{
+                if(VConf(focus_out_color_background).has_value()) {
+                    DEBUG_PRINT("Changing BG color to focus out");
+                    vte_terminal_set_color_background(current_vte_terminal, &*VConf(focus_out_color_background));
+                }
+            }
         }
         return false;
     }
