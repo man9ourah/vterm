@@ -2,3 +2,4 @@
 build/
 .ycm*
 compile_commands.json
+.clangd
