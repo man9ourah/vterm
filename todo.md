@@ -3,6 +3,7 @@
 - [ ] Shortcuts: Make keyboard shortcuts configurable from vconfig.
 - [ ] Shortcuts: yank line/word (configurable) if in normal mode.
 - [ ] Shortcuts: star and hashtag command to search for word under cursor.
+- [ ] Shortcuts: Enter key to exit normal/visual mode.
 
 - [ ] Add summery of shortcuts in help
 
