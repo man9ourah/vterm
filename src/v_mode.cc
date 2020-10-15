@@ -340,8 +340,8 @@ namespace VTERM{
                     case GDK_KEY_i:{
                         switch (compound_command) {
                             case CompoundCommands::YANK:{
-                               compound_command = CompoundCommands::YANK_INNER;
-                               return true;
+                                compound_command = CompoundCommands::YANK_INNER;
+                                return true;
                             }
 
                             default:{
@@ -461,14 +461,31 @@ namespace VTERM{
                     }
 
                     case GDK_KEY_y:{
-                        vte_terminal_copy_clipboard_format(parent_vtab->vte_terminal, VTE_FORMAT_TEXT);
-                        // Exit visual mode after yank like vim
-                        if(mode != VMode::ModeOp::NORMAL_MODE)
-                            switch_mode(VMode::ModeOp::NORMAL_MODE);
+                        switch (compound_command) {
+                            case CompoundCommands::YANK:{
+                                // Invalidate current compound_command
+                                compound_command = CompoundCommands::NONE;
+                                // Yank line
+                                DEBUG_PRINT("\nYank line\n");
+                                // Enter line visual mode
+                                switch_mode(VMode::ModeOp::VISUAL_LINE_MODE);
+                                // Copy the selection
+                                vte_terminal_copy_clipboard_format(parent_vtab->vte_terminal, VTE_FORMAT_TEXT);
+                                // Exit visual mode back to normal
+                                switch_mode(VMode::ModeOp::NORMAL_MODE);
+                                return true;
+                            }
 
-                        // We set the compound command
-                        compound_command = CompoundCommands::YANK;
-                        return true;
+                            default:{
+                                vte_terminal_copy_clipboard_format(parent_vtab->vte_terminal, VTE_FORMAT_TEXT);
+                                // Exit visual mode after yank like vim
+                                if(mode != VMode::ModeOp::NORMAL_MODE)
+                                    switch_mode(VMode::ModeOp::NORMAL_MODE);
+
+                                compound_command = CompoundCommands::YANK;
+                                return true;
+                            }
+                        }
                     }
                 }
 

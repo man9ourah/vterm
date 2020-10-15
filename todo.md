@@ -6,6 +6,8 @@
 
 - [ ] Add summery of shortcuts in help
 
+- [ ] PageUp/PageDown movement could be configured to prompt motions.
+
 - [ ] FIX: Scroll to insert mode cursor when switching to insert mode from normal
     mode (and make this configurable).
 - [ ] FIX: documentation errors.
