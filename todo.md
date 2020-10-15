@@ -1,9 +1,8 @@
 ## TODO
 
 - [ ] Shortcuts: Make keyboard shortcuts configurable from vconfig.
-- [ ] Shortcuts: yank line/word (configurable) if in normal mode.
 - [ ] Shortcuts: star and hashtag command to search for word under cursor.
-
+- [ ] Add more compound commands
 - [ ] Add summery of shortcuts in help
 
 - [ ] PageUp/PageDown movement could be configured to prompt motions.
@@ -29,6 +28,7 @@
 - [ ] Motion: Move cursor to prev/next prompt.
 - [ ] Motion: vim o command: swap cursor & selection start positions.
 
+- [X] Shortcuts: yank line/word (configurable) if in normal mode.
 - [X] Shortcuts: Enter key to exit normal/visual mode.
 - [X] FIX: some colors default value should be null so that they are set to be
     swapped.
