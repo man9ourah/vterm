@@ -1,9 +1,11 @@
 #include "cairo.h"
 #include "gdk/gdkkeysyms.h"
+#include "src/common.h"
 #include "src/v_term.h"
 #include "v_tab.h"
 #include "vtepcre2.h"
-
+#include <chrono>
+#include <optional>
 /*
  * Regext functions taken from vte example code
  */
@@ -134,6 +136,20 @@ namespace VTERM{
         const guint modifiers = event->state & gtk_accelerator_get_default_mod_mask();
         const guint keypressed = event->keyval;
 
+        static auto reference_timestamp = std::chrono::high_resolution_clock::from_time_t(0);
+        auto now_timestamp = std::chrono::high_resolution_clock::now();
+        auto difference_timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now_timestamp - reference_timestamp).count();
+
+        if(difference_timestamp > VConf(update_time)){
+            DEBUG_PRINT("Not within updatetime Refs: %lu, Now: %lu, Diff: %lu\n",
+                    reference_timestamp,
+                    now_timestamp,
+                    difference_timestamp);
+            compound_command = CompoundCommands::NONE;
+        }
+
+        reference_timestamp = now_timestamp;
+
         /*
          * Now to the keybindings that are specific to certain modes
          */
@@ -217,10 +233,48 @@ namespace VTERM{
                     }
 
                     case GDK_KEY_W:{
-                        DEBUG_PRINT("\nVTermCursor:  right statement\n");
-                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_STMT);
-                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                        return true;
+                        switch (compound_command) {
+                            case CompoundCommands::YANK:{
+                                // Invalidate current compound_command
+                                compound_command = CompoundCommands::NONE;
+                                // Yank statement
+                                DEBUG_PRINT("\nYank statement\n");
+                                // Enter visual mode
+                                switch_mode(VMode::ModeOp::VISUAL_MODE);
+                                // Go to end of statement
+                                vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::END_STMT);
+                                // Copy the selection
+                                vte_terminal_copy_clipboard_format(parent_vtab->vte_terminal, VTE_FORMAT_TEXT);
+                                // Exit visual mode back to normal
+                                switch_mode(VMode::ModeOp::NORMAL_MODE);
+                                return true;
+                            }
+
+                            case CompoundCommands::YANK_INNER:{
+                                // Invalidate current compound_command
+                                compound_command = CompoundCommands::NONE;
+                                // Yank inner statement
+                                DEBUG_PRINT("\nYank inner statement\n");
+                                // Go to end of statement
+                                vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::END_STMT);
+                                // Enter visual mode
+                                switch_mode(VMode::ModeOp::VISUAL_MODE);
+                                // Move to beginning of statement
+                                vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::BEGIN_STMT);
+                                // Copy the selection
+                                vte_terminal_copy_clipboard_format(parent_vtab->vte_terminal, VTE_FORMAT_TEXT);
+                                // Exit visual mode back to normal
+                                switch_mode(VMode::ModeOp::NORMAL_MODE);
+                                return true;
+                            }
+
+                            default:{
+                                DEBUG_PRINT("\nVTermCursor:  right statement\n");
+                                vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_STMT);
+                                gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                                return true;
+                            }
+                        }
                     }
 
                     case GDK_KEY_B:{
@@ -238,10 +292,63 @@ namespace VTERM{
                     }
 
                     case GDK_KEY_w:{
-                        DEBUG_PRINT("\nVTermCursor:  right word\n");
-                        vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_WORD);
-                        gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
-                        return true;
+                        switch (compound_command) {
+                            case CompoundCommands::YANK:{
+                                // Invalidate current compound_command
+                                compound_command = CompoundCommands::NONE;
+                                // Yank inner word
+                                DEBUG_PRINT("\nYank Word\n");
+                                // Enter visual mode
+                                switch_mode(VMode::ModeOp::VISUAL_MODE);
+                                // Go to end of word
+                                vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::END_WORD);
+                                // Copy the selection
+                                vte_terminal_copy_clipboard_format(parent_vtab->vte_terminal, VTE_FORMAT_TEXT);
+                                // Exit visual mode back to normal
+                                switch_mode(VMode::ModeOp::NORMAL_MODE);
+                                return true;
+                            }
+
+                            case CompoundCommands::YANK_INNER:{
+                                // Invalidate current compound_command
+                                compound_command = CompoundCommands::NONE;
+                                // Yank word
+                                DEBUG_PRINT("\nYank inner Word\n");
+                                // Go to end of word
+                                vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::END_WORD);
+                                // Enter visual mode
+                                switch_mode(VMode::ModeOp::VISUAL_MODE);
+                                // Move to beginning of word
+                                vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::BEGIN_WORD);
+                                // Copy the selection
+                                vte_terminal_copy_clipboard_format(parent_vtab->vte_terminal, VTE_FORMAT_TEXT);
+                                // Exit visual mode back to normal
+                                switch_mode(VMode::ModeOp::NORMAL_MODE);
+                                return true;
+                            }
+
+                            default:{
+                                // This is just a motion press
+                                DEBUG_PRINT("\nVTermCursor:  right word\n");
+                                vte_terminal_vterm_cursor_move(parent_vtab->vte_terminal, VTermCursorMove::RIGHT_WORD);
+                                gtk_widget_queue_draw(GTK_WIDGET(cursor_indicator));
+                                return true;
+                            }
+                        }
+                    }
+
+                    case GDK_KEY_i:{
+                        switch (compound_command) {
+                            case CompoundCommands::YANK:{
+                               compound_command = CompoundCommands::YANK_INNER;
+                               return true;
+                            }
+
+                            default:{
+                                switch_mode(VMode::ModeOp::INSERT_MODE);
+                                return true;
+                            }
+                        }
                     }
 
                     case GDK_KEY_b:{
@@ -358,6 +465,9 @@ namespace VTERM{
                         // Exit visual mode after yank like vim
                         if(mode != VMode::ModeOp::NORMAL_MODE)
                             switch_mode(VMode::ModeOp::NORMAL_MODE);
+
+                        // We set the compound command
+                        compound_command = CompoundCommands::YANK;
                         return true;
                     }
                 }

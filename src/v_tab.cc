@@ -171,6 +171,7 @@ namespace VTERM{
                  */
                 case VKEY_PASTE:{
                     vte_terminal_paste_clipboard(vte_terminal);
+                    DEBUG_PRINT("Pasted\n");
                     return true;
                 }
 

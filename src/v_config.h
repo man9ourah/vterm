@@ -183,6 +183,7 @@ namespace VTERM{
             gchar* word_char_exceptions = nullptr;
 
             gint scrollback_lines = 10000;
+            gint update_time = 1000;
 
             PangoFontDescription* font = pango_font_description_from_string("Monospace Normal 12");
 
@@ -456,6 +457,7 @@ namespace VTERM{
                 get_bool_or_def("behavior", "insert_after_current", &insert_after_current);
 
                 GET_NUMBER(behavior, scrollback_lines, int, integer)
+                GET_NUMBER(behavior, update_time, int, integer)
 
                 GET_STRING_AND_FREE(behavior, word_char_exceptions)
                 GET_STRING_AND_FREE(behavior, window_title)

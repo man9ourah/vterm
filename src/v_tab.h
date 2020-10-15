@@ -89,6 +89,18 @@ namespace VTERM{
                 } search_dir;
 
                 /*
+                 * Compound commands
+                 */
+                enum CompoundCommands{
+                    // None
+                    NONE,
+
+                    // Yanking
+                    YANK,
+                    YANK_INNER,
+                } compound_command;
+
+                /*
                  * Parent VTab
                  */
                 VTab* parent_vtab;
