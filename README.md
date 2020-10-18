@@ -5,13 +5,12 @@ A terminal emulator that makes your life easier.
 - **Highly customizable:** an easy to write configuration file with various
   options with sane defaults.
 - **Advanced Tabs support:**
-    - Smart tabs shortcuts like alternate tab, numbered tabs.
+    - Smart tabs shortcuts e.g. alternate tab, numbered tabs.
     - Configurable tab showing policy.
     - Configurable new tab placement.
     - Configurable new tab directory.
 - **Style theming:** use CSS to style your tab bar and search prompts or leave
-  it to system defaults. **TODO
-  add links to examples here**
+  it to system defaults. **TODO add links to examples here**
 - **VIM-like keyboard shortcuts:** yiw, yy, w, $, visual line and block modes
   and all the other good stuff, see full list below **TODO Add link here**.
 - **Prompt up/down:** ever got lost in a long command output trying to read the
@@ -26,6 +25,12 @@ A terminal emulator that makes your life easier.
   (using Überzug **TODO Add link**).
 
 ## Getting Started
+### Dependencies
+TODO:: Add dependencies.
+
+### Building
+TODO:: Add building instructions.
+
 ### Installation
 TODO:: Add installation instructions.
 
