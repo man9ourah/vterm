@@ -212,7 +212,7 @@ namespace VTERM{
 
             gchar *browser = g_strdup("firefox");
             gchar *mail = g_strdup("thunderbird");
-            gchar *tabs_css_file = g_strdup("");
+            gchar *tabs_css_file = nullptr;
 
             gboolean window_size_hints = true;
 

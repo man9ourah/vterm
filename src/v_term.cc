@@ -233,7 +233,7 @@ namespace VTERM{
     }
 
     void VTerm::notebook_style(){
-        if(!(g_strcmp0(VConf(tabs_css_file), "") == 0)){
+        if(!(VConf(tabs_css_file) == nullptr)){
             DEBUG_PRINT("Tabs css file: %s", VConf(tabs_css_file));
             GtkStyleContext* st_cntxt = gtk_widget_get_style_context(GTK_WIDGET(notebook));
             GtkCssProvider* css_provider = gtk_css_provider_new();
