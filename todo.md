@@ -15,8 +15,8 @@
 
 - [ ] Style: make search entry BG configurable
 - [ ] Style: Make it clear if no search results
-- [ ] Style: Add tabs styling through css.
 - [ ] Style: Add official icon and .desktop shortcut
+- [ ] Style: Add documentation on CSS file and name css objects clearly.
 
 - [ ] Feature: Search for selected text in browser.
 - [ ] Feature: modifyOtherKeys.
@@ -29,6 +29,7 @@
 - [ ] Motion: Move cursor to prev/next prompt.
 - [ ] Motion: vim o command: swap cursor & selection start positions.
 
+- [X] Style: Add tabs styling through css.
 - [X] Shortcuts: yank line/word (configurable) if in normal mode.
 - [X] Shortcuts: Enter key to exit normal/visual mode.
 - [X] FIX: some colors default value should be null so that they are set to be

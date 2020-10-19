@@ -233,13 +233,15 @@ namespace VTERM{
     }
 
     void VTerm::notebook_style(){
-        // TODO:: Polish and make it configurable
-        GtkStyleContext* st_cntxt = gtk_widget_get_style_context(GTK_WIDGET(notebook));
-        GtkCssProvider* css_provider = gtk_css_provider_new();
-        GFile* css_file = g_file_new_for_path("/usr/local/src/vterm/notebook.css");
-        gtk_css_provider_load_from_file(css_provider, css_file, nullptr);
-
-        gtk_style_context_add_provider(st_cntxt, GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        if(!(g_strcmp0(VConf(tabs_css_file), "") == 0)){
+            DEBUG_PRINT("Tabs css file: %s", VConf(tabs_css_file));
+            GtkStyleContext* st_cntxt = gtk_widget_get_style_context(GTK_WIDGET(notebook));
+            GtkCssProvider* css_provider = gtk_css_provider_new();
+            GFile* css_file = g_file_new_for_path(VConf(tabs_css_file));
+            gtk_css_provider_load_from_file(css_provider, css_file, nullptr);
+            gtk_style_context_add_provider(st_cntxt, GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+            g_object_unref(css_file);
+        }
     }
 
     void VTerm::window_update_geometry(VTab* vtab){
