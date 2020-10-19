@@ -92,12 +92,12 @@ using namespace std;
 /*
  * Check and set the vte color
  */
-#define SET_VTE_COLOR(vte_terminal, color) if(color) vte_terminal_set_##color(vte_terminal, &*color)
+#define SET_VTE_COLOR(vte_terminal, color) if(color) vte_terminal_set_##color(vte_terminal, &*color);
 
 /*
  * Check and get the vte color
  */
-#define GET_VTE_COLOR(key) if(get_color_or_def(#key, &temp)) key = optional<GdkRGBA>(temp)
+#define GET_VTE_COLOR(key) if(get_color_or_def(#key, &temp)) key = optional<GdkRGBA>(temp);
 
 namespace VTERM{
     /*
@@ -315,13 +315,13 @@ namespace VTERM{
                 vte_terminal_set_cursor_blink_mode(vte_terminal, cursor_blink_mode);
                 vte_terminal_set_backspace_binding(vte_terminal, backspace_binding);
                 vte_terminal_set_delete_binding(vte_terminal, delete_binding);
-                SET_VTE_COLOR(vte_terminal, color_bold);
-                SET_VTE_COLOR(vte_terminal, color_foreground);
-                SET_VTE_COLOR(vte_terminal, color_background);
-                SET_VTE_COLOR(vte_terminal, color_cursor);
-                SET_VTE_COLOR(vte_terminal, color_cursor_foreground);
-                SET_VTE_COLOR(vte_terminal, color_highlight);
-                SET_VTE_COLOR(vte_terminal, color_highlight_foreground);
+                SET_VTE_COLOR(vte_terminal, color_bold)
+                SET_VTE_COLOR(vte_terminal, color_foreground)
+                SET_VTE_COLOR(vte_terminal, color_background)
+                SET_VTE_COLOR(vte_terminal, color_cursor)
+                SET_VTE_COLOR(vte_terminal, color_cursor_foreground)
+                SET_VTE_COLOR(vte_terminal, color_highlight)
+                SET_VTE_COLOR(vte_terminal, color_highlight_foreground)
             }
 
             /*
@@ -513,6 +513,7 @@ namespace VTERM{
                 GET_NUMBER(style, cell_width_scale, double, double)
                 GET_NUMBER(style, color_background_transparency, double, double)
                 GET_NUMBER(style, focus_out_color_background_transparency, double, double)
+                GET_STRING_AND_FREE(style, tabs_css_file)
 
                 PARSE_STRING(style, cursor_shape,
                         "block", VTE_CURSOR_SHAPE_BLOCK,
@@ -523,14 +524,14 @@ namespace VTERM{
                 // optional by value
                 GdkRGBA temp;
 
-                GET_VTE_COLOR(color_bold);
-                GET_VTE_COLOR(color_foreground);
-                GET_VTE_COLOR(color_background);
-                GET_VTE_COLOR(focus_out_color_background);
-                GET_VTE_COLOR(color_cursor);
-                GET_VTE_COLOR(color_cursor_foreground);
-                GET_VTE_COLOR(color_highlight);
-                GET_VTE_COLOR(color_highlight_foreground);
+                GET_VTE_COLOR(color_bold)
+                GET_VTE_COLOR(color_foreground)
+                GET_VTE_COLOR(color_background)
+                GET_VTE_COLOR(focus_out_color_background)
+                GET_VTE_COLOR(color_cursor)
+                GET_VTE_COLOR(color_cursor_foreground)
+                GET_VTE_COLOR(color_highlight)
+                GET_VTE_COLOR(color_highlight_foreground)
 
                 gchar color_key[] = "color000";
                 for(gint i = 0; i < 256; i++){
