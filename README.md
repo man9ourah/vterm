@@ -41,7 +41,7 @@ sudo apt-get install -y cmake pkg-config libgtk-3-dev libpcre2-dev \
     libgirepository1.0-dev libxml2-utils gperf build-essential libsystemd-dev;
 
 # Install meson (https://mesonbuild.com/Quick-guide.html)
-sudo apt-get install python3 python3-pip python3-setuptools python3-wheel ninja-build;
+sudo apt-get install -y python3 python3-pip python3-setuptools python3-wheel ninja-build;
 pip3 install --user meson;
 
 # make sure meson bin is in PATH
@@ -51,13 +51,18 @@ pip3 install --user meson;
 git clone --recursive https://github.com/man9ourah/vterm.git;
 cd vterm;
 
-# Install fribidi
-git clone https://github.com/fribidi/fribidi .deps/fribidi;
-pushd .deps/fribidi;
-    meson -Ddocs=false build;
-    cd build;
-    sudo ninja install;
-popd;
+# Ubuntu 20 have the new fribidi in apt
+if [ "$(lsb_release -sr)" == "20.04" ]; then
+    sudo apt-get install -y libfribidi-dev
+else
+    # Install fribidi
+    git clone https://github.com/fribidi/fribidi .deps/fribidi;
+    pushd .deps/fribidi;
+        meson -Ddocs=false build;
+        cd build;
+        sudo ninja install;
+    popd;
+fi
 
 # Build & install VTerm
 meson build && cd build && sudo ninja install;

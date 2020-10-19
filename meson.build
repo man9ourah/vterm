@@ -28,10 +28,17 @@ if get_option('buildtype').contains('debug')
   args = ['-DVTERM_DEBUG=1']
 endif
 
+# do we need to set install_rpath? 
+optional_rpath = ''
+if get_option('set_install_rpath') == true 
+  optional_rpath = libvte_proj.get_variable('fribidi_dep').get_pkgconfig_variable('libdir')
+endif
+
 # finally our exec
 executable('vterm', 
     sources:src, 
     dependencies : [gtkdep, libvte_dep], 
+    install_rpath : optional_rpath,
     cpp_args: args,
     install: true)
 
