@@ -51,11 +51,12 @@ pip3 install --user meson;
 git clone --recursive https://github.com/man9ourah/vterm.git;
 cd vterm;
 
-set_rpath=""
-
 # Ubuntu 20 have the new fribidi in apt
 if [ "$(lsb_release -sr)" == "20.04" ]; then
     sudo apt-get install -y libfribidi-dev
+
+    # Build & install VTerm without rpath set
+    meson build && cd build && sudo ninja install;
 else
     # Install fribidi
     git clone https://github.com/fribidi/fribidi .deps/fribidi;
@@ -64,11 +65,11 @@ else
         cd build;
         sudo ninja install;
     popd;
-    set_rpath="-Dset_install_rpath=true"
+
+    # Build & install VTerm with rpath set
+    meson -Dset_install_rpath=true build && cd build && sudo ninja install;
 fi
 
-# Build & install VTerm
-meson "$set_rpath" build && cd build && sudo ninja install;
 )
 ```
 
