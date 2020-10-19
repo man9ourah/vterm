@@ -32,7 +32,6 @@ work is still needed on code clean-up and documentation file.
 ## Getting Started
 ### Quick Installation
 #### Ubuntu \[20.04, 18.04\]
-Select all and paste in your terminal:
 ```bash
 (
 # Install dependencies
@@ -69,9 +68,12 @@ else
     # Build & install VTerm with rpath set
     meson -Dset_install_rpath=true build && cd build && sudo ninja install;
 fi
-
 )
 ```
+
+For Ubuntu 16.04 and before, you will face issues with old dependencies
+versions \[Please submit a PR if you have successfully installed VTerm in
+Ubuntu 16.04 or older versions\].
 
 #### Debian
 TODO
