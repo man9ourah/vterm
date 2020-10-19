@@ -34,6 +34,7 @@ work is still needed on code clean-up and documentation file.
 #### Ubuntu
 Select all and paste in your terminal:
 ```bash
+(
 # Install dependencies
 sudo apt-get install -y cmake pkg-config libgtk-3-dev libpcre2-dev \
     valac gtk-doc-tools intltool libglib3.0-cil-dev libgnutls28-dev \
@@ -60,7 +61,7 @@ popd;
 
 # Build & install VTerm
 meson build && cd build && sudo ninja install;
-
+)
 ```
 
 #### Debian
