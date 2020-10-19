@@ -31,7 +31,7 @@ work is still needed on code clean-up and documentation file.
 
 ## Getting Started
 ### Quick Installation
-#### Ubuntu
+#### Ubuntu [20.04, 18.04]
 Select all and paste in your terminal:
 ```bash
 (
@@ -51,7 +51,7 @@ pip3 install --user meson;
 git clone --recursive https://github.com/man9ourah/vterm.git;
 cd vterm;
 
-# Ubuntu 20 have the new fribidi in apt
+# Ubuntu 20.04 have the new fribidi in apt
 if [ "$(lsb_release -sr)" == "20.04" ]; then
     sudo apt-get install -y libfribidi-dev
 
