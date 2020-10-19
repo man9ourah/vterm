@@ -2,8 +2,9 @@
 
 - [ ] Shortcuts: Make keyboard shortcuts configurable from vconfig.
 - [ ] Shortcuts: star and hashtag command to search for word under cursor.
-- [ ] Add more compound commands
-- [ ] Add summery of shortcuts in help
+
+- [ ] Add more compound commands: yi" and the likes.
+- [ ] Add summery of shortcuts in help.
 
 - [ ] PageUp/PageDown movement could be configured to prompt motions.
 

@@ -44,7 +44,7 @@ sudo apt-get install -y cmake pkg-config libgtk-3-dev libpcre2-dev \
 sudo apt-get install python3 python3-pip python3-setuptools python3-wheel ninja-build;
 pip3 install --user meson;
 
-# make sure meson bin is in PATh
+# make sure meson bin is in PATH
 [ -x "$(command -v meson)" ] || export PATH="~/.local/bin:$PATH";
 
 # clone VTerm
