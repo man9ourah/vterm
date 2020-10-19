@@ -31,7 +31,7 @@ work is still needed on code clean-up and documentation file.
 
 ## Getting Started
 ### Quick Installation
-#### Ubuntu [20.04, 18.04]
+#### Ubuntu \[20.04, 18.04\]
 Select all and paste in your terminal:
 ```bash
 (
