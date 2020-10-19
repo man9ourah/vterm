@@ -32,6 +32,6 @@ endif
 executable('vterm', 
     sources:src, 
     dependencies : [gtkdep, libvte_dep], 
-    cpp_args: args
+    cpp_args: args,
     install: true)
 
