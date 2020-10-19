@@ -32,19 +32,15 @@ work is still needed on code clean-up and documentation file.
 ## Getting Started
 ### Quick Installation
 #### Ubuntu \[20.04, 18.04\]
+First install meson >= 0.50.0 [Install](https://mesonbuild.com/Quick-guide.html).
+
+Then: 
 ```bash
 (
 # Install dependencies
 sudo apt-get install -y cmake pkg-config libgtk-3-dev libpcre2-dev \
     valac gtk-doc-tools intltool libglib3.0-cil-dev libgnutls28-dev \
     libgirepository1.0-dev libxml2-utils gperf build-essential libsystemd-dev;
-
-# Install meson (https://mesonbuild.com/Quick-guide.html)
-sudo apt-get install -y python3 python3-pip python3-setuptools python3-wheel ninja-build;
-pip3 install --user meson;
-
-# make sure meson bin is in PATH
-[ -x "$(command -v meson)" ] || export PATH="~/.local/bin:$PATH";
 
 # clone VTerm
 git clone --recursive https://github.com/man9ourah/vterm.git;
