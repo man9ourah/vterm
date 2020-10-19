@@ -32,7 +32,7 @@ work is still needed on code clean-up and documentation file.
 ## Getting Started
 ### Quick Installation
 #### Ubuntu \[20.04, 18.04\]
-First install meson >= 0.50.0 [Install](https://mesonbuild.com/Quick-guide.html).
+First install meson >= 0.50.0 [\[Install\]](https://mesonbuild.com/Quick-guide.html).
 
 Then: 
 ```bash
@@ -71,8 +71,27 @@ For Ubuntu 16.04 and before, you will face issues with old dependencies
 versions \[Please submit a PR if you have successfully installed VTerm in
 Ubuntu 16.04 or older versions\].
 
-#### Debian
-TODO
+#### Debian \[10\]
+First install meson >= 0.50.0 [\[Install\]](https://mesonbuild.com/Quick-guide.html).
+
+Then: 
+```bash
+(
+# Install dependencies
+sudo apt-get install -y cmake pkg-config libgtk-3-dev libpcre2-dev \
+    valac gtk-doc-tools intltool libglib3.0-cil-dev libgnutls28-dev \
+    libgirepository1.0-dev libxml2-utils gperf build-essential libsystemd-dev \
+    libfribidi-dev;
+
+# clone VTerm
+git clone --recursive https://github.com/man9ourah/vterm.git;
+cd vterm;
+
+# Build & install VTerm
+meson build && cd build && sudo ninja install;
+)
+```
+
 #### Fedora
 TODO
 #### Arch
