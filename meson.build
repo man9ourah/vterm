@@ -29,6 +29,9 @@ if get_option('buildtype').contains('debug')
 endif
 
 # finally our exec
-executable('vterm', sources:src, dependencies : [gtkdep, libvte_dep], cpp_args:
-  args)
+executable('vterm', 
+    sources:src, 
+    dependencies : [gtkdep, libvte_dep], 
+    cpp_args: args
+    install: true)
 
