@@ -1,3 +1,8 @@
+/*
+ * This is an exmaple notebook_style file for VTerm tab bar.
+ * This is not to be used directly.
+ */
+
 @define-color  tab_bg_color #28282B;
 @define-color  checked_tab_bg_color #005880;
 @define-color  fg_color #fcfcfc;
