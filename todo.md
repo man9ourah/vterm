@@ -19,6 +19,7 @@
 - [ ] Style: Add documentation on CSS file and name css objects clearly.
 
 - [ ] Feature: Search for selected text in browser.
+- [ ] Feature: Confirm closing if more than one tab or program is running.
 - [ ] Feature: modifyOtherKeys.
 - [ ] Feature: Url mode.
 - [ ] Feature: Figure out some mode indication on the screen: cursor color, or
