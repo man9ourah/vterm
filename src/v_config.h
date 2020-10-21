@@ -558,23 +558,23 @@ namespace VTERM{
              * Builds the default style for vterm
              */
             void build_default_style(){
-                // Dracula theme (palette 0-15)
-                gdk_rgba_parse(&palette[0],  "#ffffff");
-                gdk_rgba_parse(&palette[8],  "#4d4d4d");
-                gdk_rgba_parse(&palette[1],  "#ff5555");
-                gdk_rgba_parse(&palette[9],  "#ff6e67");
-                gdk_rgba_parse(&palette[2],  "#50fa7b");
-                gdk_rgba_parse(&palette[10], "#5af78e");
-                gdk_rgba_parse(&palette[3],  "#f1fa8c");
-                gdk_rgba_parse(&palette[11], "#f4f99d");
-                gdk_rgba_parse(&palette[4],  "#bd93f9");
-                gdk_rgba_parse(&palette[12], "#caa9fa");
-                gdk_rgba_parse(&palette[5],  "#ff79c6");
-                gdk_rgba_parse(&palette[13], "#ff92d0");
-                gdk_rgba_parse(&palette[6],  "#8be9fd");
-                gdk_rgba_parse(&palette[14], "#9aedfe");
-                gdk_rgba_parse(&palette[7],  "#bfbfbf");
-                gdk_rgba_parse(&palette[15], "#e6e6e6");
+                // Default theme (palette 0-15)
+                gdk_rgba_parse(&palette[0],  "#212125");
+                gdk_rgba_parse(&palette[8],  "#3f3f45");
+                gdk_rgba_parse(&palette[1],  "#ff2d2d");
+                gdk_rgba_parse(&palette[9],  "#B03333");
+                gdk_rgba_parse(&palette[2],  "#2df711");
+                gdk_rgba_parse(&palette[10], "#178009");
+                gdk_rgba_parse(&palette[3],  "#ffc421");
+                gdk_rgba_parse(&palette[11], "#ffd86b");
+                gdk_rgba_parse(&palette[4],  "#00b0ff");
+                gdk_rgba_parse(&palette[12], "#546E91");
+                gdk_rgba_parse(&palette[5],  "#996ba0");
+                gdk_rgba_parse(&palette[13], "#AD2470");
+                gdk_rgba_parse(&palette[6],  "#bd93f9");
+                gdk_rgba_parse(&palette[14], "#7f95d0");
+                gdk_rgba_parse(&palette[7],  "#707880");
+                gdk_rgba_parse(&palette[15], "#fcfcfc");
 
                 // Rest of xterm palette
                 // Auto generated
