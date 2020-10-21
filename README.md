@@ -1,7 +1,7 @@
 # VTerm
 A terminal emulator that makes your life easier.
 
-**Note:** We are still in beta version. Core features are pretty stable, more
+**Note:** We are still in beta version. Core features are pretty stable; more
 features to come, code clean-up and documentation [todo.md](todo.md).
 
 ## Features
@@ -126,7 +126,7 @@ You can change the prefix `/usr/local` using [meson options](https://mesonbuild.
 
 ### Shell Integration
 The meson installation will install the file `vte.sh` to `/usr/local/profile.d/`
-by defaults. This script needs to be sourced at the beginning of your shell
+by default. This script needs to be sourced at the beginning of your shell
 sessions for the integration to work. You can either move
 `/usr/local/etc/profile.d/vte.sh` to `/etc/profile.d` if you are using a login shell
 and your enviroment automatically source the files under that directory, or
@@ -462,6 +462,29 @@ will be applied to the tab bar GTK object. To give an example, see
 <p align="center">
     <img src="imgs/notebook_style_example.png"/>
 </p>
+
+## FAQ
+- **Is VTerm [VTE-based](https://github.com/GNOME/vte)?**
+
+Yes, but not the upstream vte. VTerm uses its
+[own version of vte](https://github.com/man9ourah/vte-vterm/tree/vterm) to add
+support for lots of features like the command prompt marking and the normal &
+visual modes cursors. However, unlike most (all?) other vte based terminals,
+VTerm is **statically linked** to its own version of libvte; so it is not a
+runtime requirement. This makes it much easier to install in systems where other
+vte-based terminals exists.
+
+- **Is VTerm a fork of [Termite](https://github.com/thestinger/termite)?**
+
+Termite is great! But no, VTerm is not a fork of Termite. VTerm definitely was
+inspired by it, but the two do things in totally different manners.
+1. Unlike Termite, VTerm's version of libvte is much more integrated into the
+   new features of VTerm. Termite's version of libvte is only exposing inner
+   states functions, which is limiting at best.
+2. Unlike Termite, VTerm is statically linked to libvte.
+3. Unlike Termite, VTerm provides much more customizability.
+4. Unlike Termite, VTerm provides tab support.
+5. Unlike Termite, VTerm is written with community contributions in mind.
 
 ## Contributions
 **ALL** Contributions are welcomed! However, to better coordinate the efforts,
