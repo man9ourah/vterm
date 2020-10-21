@@ -491,7 +491,7 @@ namespace VTERM{
                         "home", HOME_CWD)
 
                 PARSE_STRING(behavior, tab_cmd,
-                        "current", DEFAULT_CMD,
+                        "default", DEFAULT_CMD,
                         "cli", CLI_CMD)
 
                 PARSE_STRING(behavior, tabs_position,
