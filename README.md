@@ -4,6 +4,26 @@ A terminal emulator that makes your life easier.
 **Note:** We are still in beta version. Core features are pretty stable; more
 features to come, code clean-up and documentation [todo.md](todo.md).
 
+# Table of contents
+
+- [VTerm](#vterm)
+  - [Features](#features)
+  - [Getting Started](#getting-started)
+      - [Ubuntu \[20.04, 18.04\]](#ubuntu-2004-1804)
+      - [Debian \[10\]](#debian-10)
+      - [Fedora](#fedora)
+      - [Arch](#arch)
+  - [Building VTerm](#building-vterm)
+    - [Dependencies](#dependencies)
+    - [Building from source](#building-from-source)
+  - [Shell Integration](#shell-integration)
+  - [Commands and shortcuts](#commands-and-shortcuts)
+  - [Configuration](#configuration)
+  - [FAQ](#faq)
+    - [Is VTerm VTE-based?](#faq1)
+    - [Is VTerm a fork of Termite?](#faq2)
+  - [Contributions](#contributions)
+
 ## Features
 - **Highly customizable:** an easy to write configuration file with various
   options with sane defaults. \[[Jump to configuration section](#configuration)\]
@@ -96,6 +116,7 @@ TODO: \[Please contribute if you installed on Fedora\]
 #### Arch
 TODO: \[Please contribute if you installed on Arch\] 
 
+## Building VTerm
 ### Dependencies
 - meson >= 0.50.0 [Install](https://mesonbuild.com/Quick-guide.html).
 - ninja [Install](https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages).
@@ -109,7 +130,7 @@ TODO: \[Please contribute if you installed on Arch\]
 
 **You think this list is incomplete?** Please make a PR or open an issue.
 
-### Building & Installing
+### Building from source
 Having all dependencies met, you just need the following line for building and
 installations:
 ```bash
@@ -124,7 +145,7 @@ This will build VTerm in `build/` and install only 4 files to your system:
 
 You can change the prefix `/usr/local` using [meson options](https://mesonbuild.com/Builtin-options.html).
 
-### Shell Integration
+## Shell Integration
 The meson installation will install the file `vte.sh` to `/usr/local/profile.d/`
 by default. This script needs to be sourced at the beginning of your shell
 sessions for the integration to work. You can either move
@@ -143,7 +164,7 @@ VTerm uses a shell integration script for mainly two things:
 You can simply ignore the shell integration without affecting your terminal 
 behavior, but you will miss out on those two features.
 
-### Commands and shortcuts
+## Commands and shortcuts
 VTerm have three modes:
 - **Insert mode**. The default mode.
 - **Normal mode**. User input is not forwarded to child application, and most
@@ -446,7 +467,7 @@ and `hjkl` movements.
 VTerm was built so that it is easy to add more commands & shortcuts. If you have
 an idea for a new command, please let us know.
 
-### Configuration
+## Configuration
 VTerm is very configurable. The [default configuration file](default_vterm.conf)
 contains all possible configuration options as well as their default values. 
 We suggest copying the [default config file](default_vterm.conf) to 
@@ -464,7 +485,7 @@ will be applied to the tab bar GTK object. To give an example, see
 </p>
 
 ## FAQ
-- **Is VTerm [VTE-based](https://github.com/GNOME/vte)?**
+- <a id="faq1">**Is VTerm [VTE-based](https://github.com/GNOME/vte)?**</a>
 
 Yes, but not the upstream vte. VTerm uses its
 [own version of vte](https://github.com/man9ourah/vte-vterm/tree/vterm) to add
@@ -474,7 +495,7 @@ VTerm is **statically linked** to its own version of libvte; so it is not a
 runtime requirement. This makes it much easier to install in systems where other
 vte-based terminals exists.
 
-- **Is VTerm a fork of [Termite](https://github.com/thestinger/termite)?**
+- <a id="faq2">**Is VTerm a fork of [Termite](https://github.com/thestinger/termite)?**</a>
 
 Termite is great! But no, VTerm is not a fork of Termite. VTerm definitely was
 inspired by it, but the two do things in totally different manners.
