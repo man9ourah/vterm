@@ -154,7 +154,7 @@ You can change the prefix `/usr/local` using [meson options](https://mesonbuild.
 You can disable Fribidi, GNUTLS, and Systemd dependencies using meson options as
 well. For example, to disable Fribidi the meson configure command will be:
 ```bash
-meson -Dvte-vterm:fribidi=false` build
+meson -Dvte-vterm:fribidi=false build
 ```
 
 ## Shell Integration
