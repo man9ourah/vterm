@@ -123,10 +123,16 @@ TODO: \[Please contribute if you installed on Arch\]
 - pkg-config [Install](https://www.freedesktop.org/wiki/Software/pkg-config/).
 - cmake [Install](https://cmake.org/install/).
 - GTK3 [Install](https://www.gtk.org/docs/installations/linux/).
-- GNU Fribidi [Install](https://github.com/fribidi/fribidi).
 - PCRE2 [Install](https://sourceforge.net/projects/pcre/).
-- GNUTLS [Install](https://www.gnutls.org/download.html).
-- Systemd [Install](https://www.freedesktop.org/wiki/Software/systemd/).
+- GNU Fribidi [Install](https://github.com/fribidi/fribidi) (Optional): Used for
+  bidirectional language support. You can disable by adding
+  `-Dvte-vterm:fribidi=false` to meson.
+- GNUTLS [Install](https://www.gnutls.org/download.html) (Optional): Used to
+  encrypt data written to the disk, i.e. terminal buffer. You can disable by
+  adding `-Dvte-vterm:gnutls=false` to meson.
+- Systemd [Install](https://www.freedesktop.org/wiki/Software/systemd/)
+  (Optional): Used to spawn child shell processes into its own systemd scopes.
+  You can disable by adding `-Dvte-vterm:_systemd=false` to meson.
 
 **You think this list is incomplete?** Please make a PR or open an issue.
 
@@ -144,6 +150,12 @@ This will build VTerm in `build/` and install only 4 files to your system:
 - `vte-spawn-.scope.conf` to `/usr/local/lib/systemd/user/vte-spawn-.scope.d`.
 
 You can change the prefix `/usr/local` using [meson options](https://mesonbuild.com/Builtin-options.html).
+
+You can disable Fribidi, GNUTLS, and Systemd dependencies using meson options as
+well. For example, to disable Fribidi the meson configure command will be:
+```bash
+meson -Dvte-vterm:fribidi=false` build
+```
 
 ## Shell Integration
 The meson installation will install the file `vte.sh` to `/usr/local/profile.d/`
