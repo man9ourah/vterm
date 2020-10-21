@@ -2,22 +2,21 @@
 A terminal emulator that makes your life easier.
 
 **Note:** We are still in beta version. Core features are pretty stable, more
-work is still needed on code clean-up and documentation file.
+features to come, code clean-up and documentation [todo.md](todo.md).
 
 ## Features
 - **Highly customizable:** an easy to write configuration file with various
-  options with sane defaults.
+  options with sane defaults. \[[Jump to configuration section](#configuration)\]
 - **Advanced Tabs support:**
     - Smart tabs shortcuts e.g. alternate tab, numbered tabs.
     - Configurable tab showing policy.
     - Configurable new tab placement.
     - Configurable new tab directory.
-- **Style theming:** use CSS to style your tab bar and search prompts or leave
-  it to system defaults. **TODO add links to examples here**
+    - Tab bar styling.
 - **VIM-like keyboard shortcuts:** yiw, yy, w, $, visual line and block modes
-  and all the other good stuff, see full list below **TODO Add link here**.
+  and all the other good stuff, [see full list](#commands-and-shortcuts).
 - **Prompt up/down:** ever got lost in a long command output trying to read the
-  previous command? No more! Jump to previous/next prompt directly.
+  previous command? No more! Scroll to previous/next prompt directly.
 - **Clickable links:** see a link or a `mailto`? Just click it!
 - **Focus-aware background:** configurable background color and transparency
   based on terminal focus status so it is easy to identify currently focused
@@ -25,12 +24,12 @@ work is still needed on code clean-up and documentation file.
 - **Bidirectional text support:** no more messed-up text that is written in
   right-to-left languages.
 - **Well commented & structured code:** want to contribute? Feeling an urge to
-  hack your own terminal? Take a look at the code!
+  hack your own terminal? Take a look at the code! It was written with community
+  contributions in-mind.
 - **Lots more:** fullscreen, zoom-in/zoom-out, support for terminal images
-  (using Überzug **TODO Add link**).
+  (i.e. using [Überzug](https://github.com/seebye/ueberzug)).
 
 ## Getting Started
-### Quick Installation
 #### Ubuntu \[20.04, 18.04\]
 First install meson >= 0.50.0 [\[Install\]](https://mesonbuild.com/Quick-guide.html).
 
@@ -93,9 +92,9 @@ meson build && cd build && sudo ninja install;
 ```
 
 #### Fedora
-TODO
+TODO: \[Please contribute if you installed on Fedora\]
 #### Arch
-TODO
+TODO: \[Please contribute if you installed on Arch\] 
 
 ### Dependencies
 - meson >= 0.50.0 [Install](https://mesonbuild.com/Quick-guide.html).
@@ -111,25 +110,363 @@ TODO
 **You think this list is incomplete?** Please make a PR or open an issue.
 
 ### Building & Installing
+Having all dependencies met, you just need the following line for building and
+installations:
 ```bash
 meson build && cd build && sudo ninja install
 ```
 
+This will build VTerm in `build/` and install only 4 files to your system: 
+- `vterm` to `/usr/local/bin`. 
+- `vte.sh` to `/usr/local/etc/profile.d/`.
+- `vte-urlencode-cwd` to `/usr/local/libexec`.
+- `vte-spawn-.scope.conf` to `/usr/local/lib/systemd/user/vte-spawn-.scope.d`.
+
+You can change the prefix `/usr/local` using [meson options](https://mesonbuild.com/Builtin-options.html).
+
 ### Shell Integration
-TODO:: Explain shell integration for prompts and cwd.
+The meson installation will install the file `vte.sh` to `/usr/local/profile.d/`
+by defaults. This script needs to be sourced at the beginning of your shell
+sessions for the integration to work. You can either move
+`/usr/local/etc/profile.d/vte.sh` to `/etc/profile.d` if you are using a login shell
+and your enviroment automatically source the files under that directory, or
+simply add the following line somewhere in your `~/.zshrc` or `~/.bashrc` files:
+```bash
+source /usr/local/etc/profile.d/vte.sh
 
-### Configuration
-TODO:: Add configuration information and examples.
+```
 
-TODO:: Link a wiki page with detailed configuration options information.
+VTerm uses a shell integration script for mainly two things: 
+- Marking command prompts lines for easier scrolling.
+- Tracking current working directory for new tab opening.
 
-### Styling
-TODO:: Add information about notebook & search box CSS file.
+You can simply ignore the shell integration without affecting your terminal 
+behavior, but you will miss out on those two features.
 
 ### Commands and shortcuts
-TODO:: Add a table for keyboard shortcuts and commands.
+VTerm have three modes:
+- **Insert mode**. The default mode.
+- **Normal mode**. User input is not forwarded to child application, and most
+  commands work here. This is like Normal mode in VIM, and Copy mode in tmux.
+- **Visual modes**. Three visual modes available. Enables you to select
+  characters, blocks, or lines.
 
-## Contribution
-TODO:: Add information for how to contribute (todo.md)
+<p align="center">
+    <img src="imgs/modes_diagram.png"/>
+</p>
 
+#### General Shortcuts
+Keyboard shortcuts that works in all modes:
 
+<table align="center">
+    <tbody>
+        <tr>
+            <td>Key</td>
+            <td>Function</td>
+        </tr>
+        <tr>
+            <td colspan=2>Tabs</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-t</code></td>
+            <td>Opens a new tab</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-l</code></td>
+            <td rowspan=2>Switch to the next tab</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-pageDown</code></td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-h</code></td>
+            <td rowspan=2>Switch to the previous tab</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-pageUp</code></td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-^</code></td>
+            <td>Switch to the last tab (alternate tab)</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-1</code></td>
+            <td>Swtich to the first tab (quick access)</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-2</code></td>
+            <td>Switch to the second tab (quick access)</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-3</code></td>
+            <td>Switch to the third tab (quick access)</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-w</code></td>
+            <td>Close current tab</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-k</code></td>
+            <td rowspan=2>Move tab to the right</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-pageDown</code></td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-j</code></td>
+            <td rowspan=2>Move tab to the left</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-pageUp</code></td>
+        </tr>
+        <tr>
+            <td colspan=2>Copy and search</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-c</code></td>
+            <td>Copy selected text</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-v</code></td>
+            <td>Paste text</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-?</code></td>
+            <td>Search up</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-/</code></td>
+            <td>Search down</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-n</code></td>
+            <td>Next search result</td>
+        </tr>
+        <tr>
+            <td colspan=2>Navigation</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-o</code></td>
+            <td>Scroll one prompt up</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-i</code></td>
+            <td>Scroll one prompt down</td>
+        </tr>
+        <tr>
+            <td><code>shift-pageUp</code></td>
+            <td>Scroll one page up</td>
+        </tr>
+        <tr>
+            <td><code>shift-pageDown</code></td>
+            <td>Scroll one page down</td>
+        </tr>
+        <tr>
+            <td colspan=2>Mode switching</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-space</code></td>
+            <td>Switch to normal mode</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-Left</code></td>
+            <td>Switch to visual mode and select one char left</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-Right</code></td>
+            <td>Switch to visual mode and select one char right</td>
+        </tr>
+        <tr>
+            <td colspan=2>Zoom</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-shift-+</code></td>
+            <td>Zoom-in</td>
+        </tr>
+        <tr>
+            <td><code>ctrl--</code></td>
+            <td>Zoom-out</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-=</code></td>
+            <td>Scale font size back to 1</td>
+        </tr>
+        <tr>
+            <td><code>F11</code></td>
+            <td>Full screen </td>
+        </tr>
+    </tbody>
+</table>
+
+#### Normal & Visual Modes Commands
+Commands for normal and visual modes. This in addition to arrows
+and `hjkl` movements.
+
+<table align="center">
+    <tbody>
+        <tr>
+            <td>Key</td>
+            <td>Function</td>
+        </tr>
+        <tr>
+            <td colspan=2>Mode switching</td>
+        </tr>
+        <tr>
+            <td><code>v</code></td>
+            <td>Visual mode</td>
+        </tr>
+        <tr>
+            <td><code>V</code></td>
+            <td>Visual line mode</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-v</code></td>
+            <td>Visual block mode</td>
+        </tr>
+        <tr>
+            <td><code>Enter</code></td>
+            <td rowspan=3>Exit one mode backword</td>
+        </tr>
+        <tr>
+            <td><code>q</code></td>
+        </tr>
+        <tr>
+            <td><code>Esc</code></td>
+        </tr>
+        <tr>
+            <td colspan=2>Navigation</td>
+        </tr>
+        <tr>
+            <td><code>H</code></td>
+            <td>Go to top of screen</td>
+        </tr>
+        <tr>
+            <td><code>L</code></td>
+            <td>Go to bottom of screen</td>
+        </tr>
+        <tr>
+            <td><code>M</code></td>
+            <td>Go to middle of screen</td>
+        </tr>
+        <tr>
+            <td><code>w</code></td>
+            <td rowspan=2>Move one word to the right</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-Right</code></td>
+        </tr>
+        <tr>
+            <td><code>b</code></td>
+            <td rowspan=2>Move one word to the left</td>
+        </tr>
+        <tr>
+            <td><code>ctrl-Left</code></td>
+        </tr>
+        <tr>
+            <td><code>W</code></td>
+            <td rowspan=2>Move one statement to the right</td>
+        </tr>
+        <tr>
+            <td><code>shift-Right</code></td>
+        </tr>
+        <tr>
+            <td><code>B</code></td>
+            <td rowspan=2>Move one statement to the left</td>
+        </tr>
+        <tr>
+            <td><code>shift-Left</code></td>
+        </tr>
+        <tr>
+            <td><code>e</code></td>
+            <td>Move to the end of current word</td>
+        </tr>
+        <tr>
+            <td><code>E</code></td>
+            <td>Move to the end of current statement</td>
+        </tr>
+        <tr>
+            <td><code>Home</code></td>
+            <td rowspan=2>Go to beginning of line</td>
+        </tr>
+        <tr>
+            <td><code>0</code></td>
+        </tr>
+        <tr>
+            <td><code>End</code></td>
+            <td rowspan=2>Go to end of line</td>
+        </tr>
+        <tr>
+            <td><code>$</code></td>
+        </tr>
+        <tr>
+            <td colspan=2>Yanking</td>
+        </tr>
+        <tr>
+            <td><code>yy</code></td>
+            <td>Copy current line</td>
+        </tr>
+        <tr>
+            <td><code>yw</code></td>
+            <td>Copy from this char to end of word</td>
+        </tr>
+        <tr>
+            <td><code>yiw</code></td>
+            <td>Copy this whole word</td>
+        </tr>
+        <tr>
+            <td><code>yW</code></td>
+            <td>Copy from this char to end of statement</td>
+        </tr>
+        <tr>
+            <td><code>yiW</code></td>
+            <td>Copy this whole statement</td>
+        </tr>
+        <tr>
+            <td colspan=2>Search</td>
+        </tr>
+        <tr>
+            <td><code>?</code></td>
+            <td>Search up</td>
+        </tr>
+        <tr>
+            <td><code>/</code></td>
+            <td>Search down</td>
+        </tr>
+        <tr>
+            <td><code>n</code></td>
+            <td>Next search result</td>
+        </tr>
+        <tr>
+            <td><code>N</code></td>
+            <td>Previous search result</td>
+        </tr>
+    </tbody>
+</table>
+
+VTerm was built so that it is easy to add more commands & shortcuts. If you have
+an idea for a new command, please let us know.
+
+### Configuration
+VTerm is very configurable. The [default configuration file](default_vterm.conf)
+contains all possible configuration options as well as their default values. 
+We suggest copying the [default config file](default_vterm.conf) to 
+`~/.config/vterm/vterm.conf` and edit it there. Simply reopen VTerm to update
+the configuration options.
+
+#### Tab bar Styling
+VTerm wants you to be able to customize everything! Although this feature is not
+user friendly (yet), you can customize the tab bar style using a CSS file that
+will be applied to the tab bar GTK object. To give an example, see
+[notebook_style.css](notebook_style.css). The result of which is: 
+
+<p align="center">
+    <img src="imgs/notebook_style_example.png"/>
+</p>
+
+## Contributions
+**ALL** Contributions are welcomed! However, to better coordinate the efforts,
+please take a look at the [todo.md](./todo.md) file and let us know by opening
+an issue. If you are reporting a bug, please open an issue. 
+
+#### Author
+Mansour Alharthi \[[Email](mailto:man9our.ah@gmail.com)\]\[[Twitter](https://twitter.com/Man9ourah)\].
