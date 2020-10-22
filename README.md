@@ -97,9 +97,7 @@ Then:
 (
 # Install dependencies
 sudo apt-get install -y cmake pkg-config libgtk-3-dev libpcre2-dev \
-    valac gtk-doc-tools intltool libglib3.0-cil-dev libgnutls28-dev \
-    libgirepository1.0-dev libxml2-utils gperf build-essential libsystemd-dev \
-    libfribidi-dev;
+    libglib3.0-cil-dev libgnutls28-dev build-essential libfribidi-dev;
 
 # clone VTerm
 git clone --recursive https://github.com/man9ourah/vterm.git;
