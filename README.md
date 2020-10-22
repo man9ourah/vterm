@@ -58,8 +58,7 @@ Then:
 (
 # Install dependencies
 sudo apt-get install -y cmake pkg-config libgtk-3-dev libpcre2-dev \
-    valac gtk-doc-tools intltool libglib3.0-cil-dev libgnutls28-dev \
-    libgirepository1.0-dev libxml2-utils gperf build-essential libsystemd-dev;
+    libglib3.0-cil-dev libgnutls28-dev build-essential 
 
 # clone VTerm
 git clone --recursive https://github.com/man9ourah/vterm.git;
@@ -131,8 +130,8 @@ TODO: \[Please contribute if you installed on Arch\]
   encrypt data written to the disk, i.e. terminal buffer. You can disable by
   adding `-Dvte-vterm:gnutls=false` to meson.
 - Systemd [Install](https://www.freedesktop.org/wiki/Software/systemd/)
-  (Optional): Used to spawn child shell processes into its own systemd scopes.
-  You can disable by adding `-Dvte-vterm:_systemd=false` to meson.
+  (Optional): Disabled by default; used to spawn child shell processes into its
+  own systemd scopes. You can enable by adding `-Dvte-vterm:_systemd=true` to meson.
 
 **You think this list is incomplete?** Please make a PR or open an issue.
 
@@ -162,7 +161,7 @@ The meson installation will install the file `vte.sh` to `/usr/local/profile.d/`
 by default. This script needs to be sourced at the beginning of your shell
 sessions for the integration to work. You can either move
 `/usr/local/etc/profile.d/vte.sh` to `/etc/profile.d` if you are using a login shell
-and your enviroment automatically source the files under that directory, or
+and your environment automatically source the files under that directory, or
 simply add the following line somewhere in your `~/.zshrc` or `~/.bashrc` files:
 ```bash
 source /usr/local/etc/profile.d/vte.sh
