@@ -31,6 +31,7 @@
 - [ ] Motion: ctrl-d/u ctrl-b/f for half and full page movement.
 - [ ] Motion: Move cursor to prev/next prompt.
 - [ ] Motion: vim o command: swap cursor & selection start positions.
+- [ ] Motion: {} movement.
 
 - [X] Style: Add tabs styling through css.
 - [X] Shortcuts: yank line/word (configurable) if in normal mode.
