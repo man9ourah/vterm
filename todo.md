@@ -2,6 +2,7 @@
 
 - [ ] Shortcuts: Make keyboard shortcuts configurable from vconfig.
 - [ ] Shortcuts: star and hashtag command to search for word under cursor.
+- [ ] Shortcuts: click on notebook header and tabs to close and create new tab.
 
 - [ ] Add more compound commands: yi" and the likes.
 - [ ] Add summery of shortcuts in help.
@@ -20,6 +21,7 @@
 
 - [ ] Feature: Search for selected text in browser.
 - [ ] Feature: Confirm closing if more than one tab or program is running.
+    https://github.com/GNOME/gnome-terminal/blob/757d37795698238ba3152b380ee0f91c124bedc9/src/terminal-screen.c#L2219
 - [ ] Feature: modifyOtherKeys.
 - [ ] Feature: Url mode.
 - [ ] Feature: Figure out some mode indication on the screen: cursor color, or
