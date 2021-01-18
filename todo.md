@@ -3,6 +3,7 @@
 - [ ] Shortcuts: Make keyboard shortcuts configurable from vconfig.
 - [ ] Shortcuts: star and hashtag command to search for word under cursor.
 - [ ] Shortcuts: click on notebook header and tabs to close and create new tab.
+- [ ] Shortcuts: separate tab to new window.
 
 - [ ] Add more compound commands: yi" and the likes.
 - [ ] Add summery of shortcuts in help.
