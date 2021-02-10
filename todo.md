@@ -12,8 +12,8 @@
 
 - [ ] FIX: Scroll to insert mode cursor when switching to insert mode from normal
     mode (and make this configurable).
-- [ ] FIX: documentation errors.
-- [ ] FIX: Change submodule url to http instead.
+- [ ] FIX: VTE documentation errors.
+- [ ] FIX: Change git submodule url to http instead.
 
 - [ ] Style: make search entry BG configurable
 - [ ] Style: Make it clear if no search results
@@ -21,8 +21,6 @@
 - [ ] Style: Add documentation on CSS file and name css objects clearly.
 
 - [ ] Feature: Search for selected text in browser.
-- [ ] Feature: Confirm closing if more than one tab or program is running.
-    https://github.com/GNOME/gnome-terminal/blob/757d37795698238ba3152b380ee0f91c124bedc9/src/terminal-screen.c#L2219
 - [ ] Feature: modifyOtherKeys.
 - [ ] Feature: Url mode.
 - [ ] Feature: Figure out some mode indication on the screen: cursor color, or
@@ -34,6 +32,7 @@
 - [ ] Motion: vim o command: swap cursor & selection start positions.
 - [ ] Motion: {} movement.
 
+- [X] Feature: Confirm closing if more than one tab or program is running.
 - [X] Style: Add tabs styling through css.
 - [X] Shortcuts: yank line/word (configurable) if in normal mode.
 - [X] Shortcuts: Enter key to exit normal/visual mode.

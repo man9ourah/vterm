@@ -35,6 +35,8 @@ namespace VTERM{
             vtab->vterm->deleteVTab((VTab*)data);
 
             return;
+        }else{
+            ((VTab*)data)->child_pid = pid;
         }
     }
 
@@ -53,7 +55,7 @@ namespace VTERM{
 
         /*
          * This will get really complicated overtime.. so:
-         *  - NO FALL THROUGH!! direct fall through when there is no code between 
+         *  - NO FALL THROUGH!! direct fall through when there is no code between
          *  two cases are fine.
          *
          *  - If case is entered, it should RETURN from the function. It should
@@ -281,7 +283,7 @@ namespace VTERM{
             if (gdk_window) {
                 char xid_s[std::numeric_limits<long unsigned>::digits10 + 1];
                 snprintf(xid_s, sizeof(xid_s), "%lu", GDK_WINDOW_XID(gdk_window));
-                env = g_environ_setenv(env, "WINDOWID", xid_s, TRUE);
+                env = g_environ_setenv(env, "WINDOWID", xid_s, true);
             }else{
                 g_printerr("No gdk window.\n");
             }
@@ -341,6 +343,92 @@ namespace VTERM{
 
         // Add it to our map
         regexTagMap[tag] = regex_desc;
+    }
+
+    // Copied from gnome-terminal
+    gboolean VTab::has_foreground_process(){
+        char *command = NULL;
+        char *data_buf = NULL;
+        char *basename = NULL;
+        char *name = NULL;
+        VtePty *pty;
+        int fd;
+#if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__OpenBSD__)
+        int mib[4];
+#else
+        char filename[64];
+#endif
+        char *data;
+        gsize i;
+        gsize len;
+        int fgpid;
+
+        if(child_pid == -1)
+            return false;
+
+        pty = vte_terminal_get_pty(vte_terminal);
+        if(!pty)
+            return false;
+
+        fd = vte_pty_get_fd(pty);
+        if(fd == -1)
+            return false;
+
+        fgpid = tcgetpgrp(fd);
+        if(fgpid == -1 || fgpid == child_pid)
+            return false;
+
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+        mib[0] = CTL_KERN;
+        mib[1] = KERN_PROC;
+        mib[2] = KERN_PROC_ARGS;
+        mib[3] = fgpid;
+        if(sysctl(mib, G_N_ELEMENTS(mib), NULL, &len, NULL, 0) == -1)
+            return true;
+
+        data_buf = g_malloc0 (len);
+        if(sysctl(mib, G_N_ELEMENTS(mib), data_buf, &len, NULL, 0) == -1)
+            return true;
+        data = data_buf;
+#elif defined(__OpenBSD__)
+        mib[0] = CTL_KERN;
+        mib[1] = KERN_PROC_ARGS;
+        mib[2] = fgpid;
+        mib[3] = KERN_PROC_ARGV;
+        if(sysctl(mib, G_N_ELEMENTS(mib), NULL, &len, NULL, 0) == -1)
+            return true;
+
+        data_buf = g_malloc0(len);
+        if(sysctl(mib, G_N_ELEMENTS(mib), data_buf, &len, NULL, 0) == -1)
+            return true;
+        data = ((char**)data_buf)[0];
+#else
+        g_snprintf (filename, sizeof(filename), "/proc/%d/cmdline", fgpid);
+        if (!g_file_get_contents(filename, &data_buf, &len, NULL))
+            return true;
+        data = data_buf;
+#endif
+
+        basename = g_path_get_basename(data);
+        if(!basename)
+            return true;
+
+        name = g_filename_to_utf8(basename, -1, NULL, NULL, NULL);
+        if(!name)
+            return true;
+
+        if (len > 0 && data[len - 1] == '\0')
+            len--;
+        for(i = 0; i < len; i++){
+            if (data[i] == '\0')
+                data[i] = ' ';
+        }
+
+        command = g_filename_to_utf8(data, -1, NULL, NULL, NULL);
+        if(!command)
+            return true;
+
+        return true;
     }
 
     void VTab::connect_signals(){

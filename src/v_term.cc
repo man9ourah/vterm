@@ -14,6 +14,31 @@ namespace VTERM{
         ((VTerm*)data)->window_set_size();
     }
 
+    gboolean VTerm::window_handle_delete_event(GtkWidget* window, GdkEvent* event, gpointer data){
+        VTerm* vterm = (VTerm*)data;
+
+        for(auto &i: vterm->hboxVTabMap){
+            if(((VTab*)i.second)->has_foreground_process()){
+
+                GtkWidget* dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_MESSAGE_WARNING,
+                        GTK_BUTTONS_YES_NO,
+                        "You have running jobs!");
+                gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "Are you sure you want to close VTerm?");
+
+                gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+                if(res == GTK_RESPONSE_YES){
+                    return false;
+                }else{
+                    gtk_widget_destroy(dialog);
+                    return true;
+                }
+            }
+        }
+       return false;
+    }
+
     gboolean VTerm::window_focus_changed_cb(GtkWindow* _window, GdkEvent *event, gpointer data){
         // Update the background/transparency with focus in/out
         VTerm* vterm = (VTerm*)data;
@@ -410,6 +435,8 @@ namespace VTERM{
         if(VConf(show_tab_policy) == VConfig::ShowTabPolicy::SMART){
             g_signal_connect(window, "key-release-event", G_CALLBACK(window_key_release_cb), this);
         }
+
+        g_signal_connect(window, "delete-event", G_CALLBACK(window_handle_delete_event), this);
     }
 
     void VTerm::run(){

@@ -27,6 +27,11 @@ namespace VTERM{
             VTerm* vterm;
 
             /*
+             * The child process pid
+             */
+            gint child_pid = -1;
+
+            /*
              * HBox: parent of all!
              */
             GtkBox* hbox;
@@ -202,6 +207,11 @@ namespace VTERM{
              * Add regex matches to terminal
              */
             void add_regex(Regex_Desc regex_desc, const char* pattern);
+
+            /*
+             * Check if there is a foreground process in this tab
+             */
+            gboolean has_foreground_process();
 
             /*
              * Setter:: create a new tab label

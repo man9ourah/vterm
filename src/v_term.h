@@ -56,6 +56,7 @@ namespace VTERM{
              * Events callback functions
              */
 
+            static gboolean window_handle_delete_event(GtkWidget* window, GdkEvent* event, gpointer data);
             static void window_realize_cb(GtkWindow* _window, gpointer data);
             static gboolean window_focus_changed_cb(GtkWindow* _window, GdkEvent *event, gpointer data);
             static void window_screen_changed_cb(GtkWindow* window, GdkScreen* _prev_screen, gpointer _data);
