@@ -337,7 +337,9 @@ namespace VTERM{
         VTab* vtab = getCurrentVTab();
 
         // If we dont have any tab, no need to set the window size
-        if(!vtab)
+        // If the user does not want size hints, she probably does not want
+        // setting the size.
+        if(!vtab || !VConf(window_size_hints))
             return;
 
         // Update our records
