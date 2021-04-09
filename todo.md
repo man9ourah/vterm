@@ -16,7 +16,8 @@
     mode (and make this configurable).
 - [ ] FIX: VTE documentation errors.
 - [ ] FIX: Some word motions are buggy; maybe check nvim implementation.
-
+- [ ] FIX: Sometimes the prompt scrolling wont work if first prompt output is
+  too large.
 ### Style
 - [ ] Style: make search entry BG configurable
 - [ ] Style: Make it clear if no search results
