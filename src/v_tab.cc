@@ -300,7 +300,7 @@ namespace VTERM{
         }else{
             // For other tabs, consult config
 
-            if(VConf(tab_cmd) == VConfig::NewTabCMD::DEFAULT_CMD)
+            if(VConf(tab_cmd) == VConfig::NewTabCMD::DEFAULT_CMD || cmd == nullptr)
                 // use default shell, note that it is initialized to cli_cmd
                 // so CLI_CMD is covered.
                 cmd = vterm->user_def_shell;
