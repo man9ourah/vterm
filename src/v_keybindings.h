@@ -87,6 +87,18 @@
 #define VKEY_DOWN_PROMPT GDK_KEY_i
 
 /*
+ * PageUp scroll
+ * (WITH_MODIFIER)
+ */
+#define VKEY_PAGEUP_SCROLL GDK_KEY_braceright
+
+/*
+ * PageDown scroll
+ * (WITH_MODIFIER)
+ */
+#define VKEY_PAGEDOWN_SCROLL GDK_KEY_braceleft
+
+/*
  * Move tab to right
  * (WITH_MODIFIER)
  */

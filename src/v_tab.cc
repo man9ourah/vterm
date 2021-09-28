@@ -138,6 +138,26 @@ namespace VTERM{
                 }
 
                 /*
+                 * PageUp scroll
+                 */
+                case VKEY_PAGEUP_SCROLL:{
+                    GtkAdjustment* gtk_adj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(vte_terminal));
+                    gtk_adjustment_set_value(gtk_adj,
+                            gtk_adjustment_get_value(gtk_adj) - gtk_adjustment_get_page_increment(gtk_adj));
+                    return true;
+                }
+
+                /*
+                 * PageDown scroll
+                 */
+                case VKEY_PAGEDOWN_SCROLL:{
+                    GtkAdjustment* gtk_adj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(vte_terminal));
+                    gtk_adjustment_set_value(gtk_adj,
+                            gtk_adjustment_get_value(gtk_adj) + gtk_adjustment_get_page_increment(gtk_adj));
+                    return true;
+                }
+
+                /*
                  * Move tab to right
                  * PageUp seems standard for this too
                  */
