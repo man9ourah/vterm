@@ -21,6 +21,8 @@
 - [ ] Some word motions are buggy; maybe check nvim implementation.
 - [ ] Sometimes the prompt scrolling wont work if first prompt output is
     too large.
+- [ ] Fix the prompt markers when the terminal size changes and their rows
+      become different.
 
 ### Style
 
